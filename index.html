@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>&#x5E30;&#x5B85;&#x90E8;&#x30B9;&#x30E9;&#x30A4;&#x30C0;&#x30FC;</title>
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
+<style>
+  .flight-card{margin-top:10px;padding:13px;border:1px solid #ffffff30;border-radius:12px;background:linear-gradient(145deg,#192637f5,#0f1825ed);box-shadow:0 10px 30px #0005}.flight-kicker{color:#9dc6ff;font-size:9px;letter-spacing:.16em;font-weight:800}.flight-title{margin:5px 0 10px;font-size:15px;line-height:1.45;font-weight:750}.flight-route{display:flex;align-items:center;gap:7px;color:#e8eef8;font-size:9px;font-weight:700;white-space:nowrap}.flight-route i{flex:1;min-width:12px;border-top:1px dashed #76b6ff}.flight-meta{display:flex;justify-content:space-between;margin-top:9px;color:#bac8da;font-size:10px}.flight-progress{height:3px;margin-top:8px;overflow:hidden;border-radius:5px;background:#ffffff24}.flight-progress span{display:block;width:0;height:100%;background:#71c8ff;box-shadow:0 0 10px #71c8ff}.flight-status{margin:8px 0;color:#d4e2f4;font-size:10px}.ride-controls{margin:4px 0 8px;color:#9fc8e8;font-size:9px;letter-spacing:.02em}#panel .flight-button{width:100%;margin:0;padding:10px;border-radius:8px;background:linear-gradient(100deg,#3182f6,#16b8cc);font-size:12px;font-weight:750}  .ride-mode #panel>h1,.ride-mode #panel>p,.ride-mode #panel>select,.ride-mode #panel>button:not(.flight-button),.ride-mode #panel>label,.ride-mode #panel>div:not(.flight-card){display:none}.ride-mode #panel{max-width:250px;padding:9px 11px;background:#101b2acc}.ride-mode .flight-card{margin:0;padding:9px 11px}.ride-mode .flight-title{font-size:12px;margin:2px 0 5px}.ride-mode .flight-meta{margin-top:5px}.ride-mode .flight-status{margin:4px 0}.ride-mode .flight-route{font-size:8px}  .route-setup{padding:10px;border:1px solid #ffffff27;border-radius:10px;background:#101b2acc}.route-point{display:grid;grid-template-columns:1fr auto;gap:3px 8px;margin-bottom:10px}.route-point b{color:#8bcaff;font-size:10px;letter-spacing:.1em}.route-point span{grid-column:1/-1;font-size:11px;color:#d8e5f2}.route-point select{grid-column:1/-1;width:100%;padding:6px;border:1px solid #415873;border-radius:6px;background:#17283a;color:#fff;font-size:11px}.route-point button{grid-column:1/-1;text-align:left;background:#33465d!important}.route-point button.active{background:#126dc4!important;box-shadow:0 0 0 1px #75caff inset}.route-message{font-size:10px;color:#c5d3e2;margin:4px 0 9px;line-height:1.4}.route-setup .flight-button{font-size:15px!important;letter-spacing:.08em}.route-setup .flight-button:disabled{opacity:.45;cursor:not-allowed}.route-pin{padding:4px 8px;border-radius:12px;border:2px solid white;color:white;font-size:10px;font-weight:800;white-space:nowrap;box-shadow:0 2px 8px #0008}.route-pin.start{background:#1489e8}.route-pin.end{background:#e95e43}.map-tools{margin-top:8px;font-size:11px}.map-tools summary{cursor:pointer;color:#c4d3e5}.ride-mode #routeSetup,.ride-mode .map-tools{display:none}.ride-mode #panel>h1,.ride-mode #panel>p{display:none}.ride-mode #panel{max-width:250px;padding:9px 11px;background:#101b2acc}.ride-mode .flight-card{margin:0;padding:9px 11px}.ride-mode .flight-title{font-size:12px;margin:2px 0 5px}.ride-mode .flight-meta{margin-top:5px}.ride-mode .flight-status{margin:4px 0}.ride-mode .flight-route{font-size:8px}  .arrival-modal{display:none;position:fixed;inset:0;z-index:30;align-items:center;justify-content:center;padding:20px;background:rgba(3,10,22,.62);backdrop-filter:blur(5px)}.arrival-modal.open{display:flex}.arrival-card{position:relative;width:min(440px,92vw);padding:28px 26px 24px;border:1px solid #ffffff40;border-radius:20px;color:#f7fbff;background:linear-gradient(145deg,#1b3049f5,#101a2bf5);box-shadow:0 24px 80px #0008,0 0 40px #39bdf233;cursor:pointer}.arrival-card h2{margin:0 32px 22px 0;color:#a9e7ff;font-size:24px;line-height:1.35}.arrival-close{position:absolute;top:12px;right:14px;width:34px;height:34px;border:0;border-radius:50%;color:#fff;background:#ffffff1c;font-size:22px;cursor:pointer}.arrival-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid #ffffff20;font-size:14px}.arrival-row span{color:#cad8e9}.arrival-row strong{color:#fff;font-size:18px;white-space:nowrap}.arrival-hint{margin:18px 0 0;color:#91a9c3;text-align:center;font-size:11px}  #map { background: linear-gradient(to bottom, #2f86e0 0%, #6fb4f2 45%, #cfe8ff 100%); }
+  .lbl2 { color: #fff; font-weight: bold; font-size: 12px; padding: 2px 8px; border-radius: 10px; border: 1px solid #fff; white-space: nowrap; pointer-events: none; box-shadow: 0 1px 4px rgba(0,0,0,.5); }
+  html, body, #map { margin: 0; width: 100%; height: 100%; font-family: system-ui, "Hiragino Sans", "Yu Gothic", sans-serif; }
+  #panel { position: absolute; top: 12px; left: 12px; z-index: 5; background: rgba(20,24,32,.85); color: #fff; padding: 12px 14px; border-radius: 10px; max-width: 250px; font-size: 12px; line-height: 1.6; }
+  #panel h1 { font-size: 15px; margin: 0 0 6px; }
+  #panel p { margin: 0 0 8px; opacity: .85; }
+  #panel button { margin: 2px 4px 2px 0; padding: 6px 10px; border: 0; border-radius: 6px; background: #3b82f6; color: #fff; font-size: 12px; cursor: pointer; }
+  #panel button:hover { background: #2563eb; }
+  #panel label { display: block; margin-top: 6px; }
+  .lbl { color: #fff; font-weight: bold; font-size: 14px; text-shadow: 0 0 4px #000, 0 0 4px #000; white-space: nowrap; pointer-events: none; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="panel">
+  <h1>&#x5E30;&#x5B85;&#x90E8;&#x30B9;&#x30E9;&#x30A4;&#x30C0;&#x30FC;</h1>
+  <p>Choose the start and destination on the top-down map.</p>
+  <div id="routeSetup" class="route-setup">
+    <div class="route-point"><b>START</b><span id="startCoord"></span><select id="startSelect" aria-label="Start location"></select><button id="pickStart">Choose start on map</button></div>
+    <div class="route-point"><b>DESTINATION</b><span id="endCoord"></span><select id="endSelect" aria-label="Destination location"></select><button id="pickEnd">Choose destination on map</button></div>
+    <div id="routeMessage" class="route-message">Default route: Route from start to destination</div>
+    <button id="btnFlight" class="flight-button">&#x5E30;&#x5B85;</button>
+  </div>
+  <div class="flight-card"><div class="flight-kicker">FIRST-PERSON RIDE</div><div class="flight-title">Route from start to destination</div><div class="flight-route"><span>START</span><i></i><span>DESTINATION</span></div><div class="flight-meta"><span id="flightAltitude">Speed 0 km/h</span><span id="routeDistance">10 km route</span></div><div class="flight-progress"><span id="flightProgress"></span></div><div id="flightStatus" class="flight-status">Choose two points, then press the Home button.</div><div class="ride-controls">W/S: look up/down &nbsp; A/D: turn</div></div>
+  <details class="map-tools"><summary>Map tools</summary>
+    <select id="sel" style="width:100%;margin:6px 0 4px"></select><br>
+    <button id="btnTop">Top view</button><button id="btnOrbit">Orbit ON/OFF</button>
+    <label><input type="checkbox" id="chkOsm"> Show 3D buildings</label>
+    <div style="margin-top:8px;border-top:1px solid #556;padding-top:6px">Adjust a model location (click map)<br><button id="btnPlace">Place selected model</button><div id="coords" style="opacity:.85;margin-top:4px;font-size:11px"></div></div>
+  </details>
+</div>
+<div id="arrivalModal" class="arrival-modal" aria-hidden="true"><div class="arrival-card" role="dialog" aria-modal="true" aria-labelledby="arrivalTitle"><button id="arrivalClose" class="arrival-close" aria-label="&#x9589;&#x3058;&#x308B;">&times;</button><h2 id="arrivalTitle">&lt;&lt;&#x5E30;&#x5B85;&#x3057;&#x307E;&#x3057;&#x305F;&#xFF01;&gt;&gt;</h2><div class="arrival-row"><span>&#x5E73;&#x5747;&#x901F;&#x5EA6;&#xFF1A;&#x6642;&#x901F;</span><strong><b id="arrivalAverage">--</b> km/h</strong></div><div class="arrival-row"><span>&#x6700;&#x5927;&#x901F;&#x5EA6;&#xFF1A;&#x6642;&#x901F;</span><strong><b id="arrivalMaximum">--</b> km/h</strong></div><div class="arrival-row"><span>&#x5E30;&#x5B85;&#x307E;&#x3067;&#x306B;&#x304B;&#x304B;&#x3063;&#x305F;&#x6642;&#x9593;</span><strong><b id="arrivalTime">--</b> &#x79D2;</strong></div><p class="arrival-hint">&#x30AF;&#x30EA;&#x30C3;&#x30AF;&#x3067;&#x9589;&#x3058;&#x308B; / 10&#x79D2;&#x5F8C;&#x306B;&#x81EA;&#x52D5;&#x3067;&#x9589;&#x3058;&#x307E;&#x3059;</p></div></div>
+<script>
+const SITES = {
+  tower:  { lngLat: [137.73722, 34.70560], zoom: 16.8, pitch: 68, bearing: 40, name: 'Act Tower (212m)', labelY: -230 },
+  castle: { lngLat: [137.72546, 34.71173], zoom: 17.6, pitch: 68, bearing: 160, name: 'Hamamatsu Castle', labelY: -150 },
+};
+let focus = 'tower';
+
+const map = new maplibregl.Map({
+  container: 'map', style: 'https://tiles.openfreemap.org/styles/liberty',
+  center: [137.70, 34.735], zoom: 12.5, pitch: 0, bearing: 0, maxPitch: 85,
+});
+map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
+
+// ---------- three.js 部品 ----------
+const D2R = Math.PI / 180;
+function winTex(base, line, cols, rows, w = 64, h = 64) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const g = c.getContext('2d');
+  g.fillStyle = base; g.fillRect(0, 0, w, h);
+  g.fillStyle = line; g.fillRect(0, h - 5, w, 5);                 // 階の境目
+  g.fillRect(0, 0, 3, h);                                         // 縦マリオン
+  g.fillStyle = 'rgba(255,255,255,.28)'; g.fillRect(6, 6, w - 12, 14); // 反射
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(cols, rows);
+  return t;
+}
+const lam = (color, map) => new THREE.MeshLambertMaterial({ color, map });
+function box(w, h, d, mat, x, y, z) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+  m.position.set(x, y + h / 2, z); return m;
+}
+function ecyl(rx, rz, h, mat, y, seg = 64, rTop) {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(rTop ?? 1, 1, h, seg), mat);
+  m.scale.set(rx, 1, rz); m.position.y = y + h / 2; return m;
+}
+// 寄棟風の瓦屋根(四角錐)
+function hip(w, d, h, mat, y) {
+  const m = new THREE.Mesh(new THREE.ConeGeometry(0.7071, h, 4), mat);
+  m.rotation.y = Math.PI / 4; m.scale.set(w, 1, d); m.position.y = y + h / 2; return m;
+}
+// 千鳥破風(三角屋根の飾り)
+function gable(w, h, depth, wallMat, roofMat, x, y, z) {
+  const s = new THREE.Shape(); s.moveTo(-w / 2, 0); s.lineTo(w / 2, 0); s.lineTo(0, h); s.closePath();
+  const geo = new THREE.ExtrudeGeometry(s, { depth, bevelEnabled: false });
+  const wall = new THREE.Mesh(geo, wallMat), grp = new THREE.Group();
+  grp.add(wall);
+  const r = new THREE.Mesh(new THREE.ConeGeometry(w * 0.62, h * 1.1, 4), roofMat);
+  r.rotation.y = Math.PI / 4; r.scale.set(1, 1, depth / (w * 0.88)); r.position.set(0, h * 0.55, depth / 2);
+  grp.add(r); grp.position.set(x, y, z); return grp;
+}
+
+// ---------- アクトタワー ----------
+function buildTower() {
+  const g = new THREE.Group();
+  const glass = lam(0x6fa8d6, winTex('#4f86b8', '#dfe8f0', 1, 1)); glass.map.repeat.set(26, 33);
+  const podium = lam(0xd9d3c5, winTex('#cfc8b8', '#8a8478', 1, 1)); podium.map.repeat.set(14, 7);
+  const band = lam(0x24384c), crown = lam(0xeef2f6), white = lam(0xffffff);
+  g.add(box(92, 40, 62, podium, 0, 0, 0));                        // 低層部(アクトプラザ)
+  g.add(box(64, 22, 46, lam(0xe4e0d6), 44, 0, 26));               // コングレスセンター側(概略)
+  g.add(box(58, 30, 54, lam(0xc9c3b6), -40, 0, 50));              // 大ホール側(概略)
+  g.add(ecyl(32, 26, 146, glass, 40));                            // 本体(ガラス)
+  g.add(ecyl(32.4, 26.4, 8, band, 181));                          // 展望回廊の帯
+  g.add(ecyl(24, 20, 16, crown, 189, 64, 0.82));                  // 頂部
+  g.add(ecyl(0.9, 0.9, 12, white, 200.8, 12));                    // 塔屋
+  g.add(ecyl(1.4, 1.4, 1, lam(0xd22b2b), 208, 12));               // 航空障害灯
+  g.rotation.y = -20 * D2R;
+  return g;
+}
+
+// ---------- 浜松城 ----------
+function buildCastle() {
+  const root = new THREE.Group(), g = new THREE.Group();
+  const HILL = 25;                                                // 山の高さ(m)
+  g.position.y = HILL; root.add(g);
+  const hill = ecyl(95, 80, HILL, lam(0x6a9150), 0, 48, 0.38);    // 裾野→山頂へ細くなる円錐台
+  root.add(hill);
+  const stone = lam(0x8c8677), stone2 = lam(0x9a9484), wall = lam(0xf3efe4);
+  const roof = lam(0x3a4048), wood = lam(0x4a3b2e), grass = lam(0x5f8f4a), dark = lam(0x2b2f36);
+  g.add(box(50, 0.6, 40, grass, 0, 0, 0));                        // 山頂の芝地
+  g.add(box(30, 4, 26, stone, 0, 1, 0));                          // 天守台(石垣)下段
+  g.add(box(26, 4, 22, stone2, 0, 5, 0));                         // 天守台 上段
+  const y0 = 9;
+  g.add(box(15, 5.5, 12, wall, 0, y0, 0));                        // 1層
+  g.add(hip(20, 17, 3.2, roof, y0 + 5.5));                        // 1層目の屋根
+  g.add(gable(8, 3.4, 3, wall, roof, 0, y0 + 5.5, 6.3));          // 千鳥破風
+  g.add(box(10.5, 4.2, 8.2, wall, 0, y0 + 8.4, 0));               // 2層
+  g.add(hip(14.5, 12, 2.8, roof, y0 + 12.6));
+  g.add(box(7.2, 3.6, 5.4, wall, 0, y0 + 15.2, 0));               // 3層(最上階)
+  g.add(hip(10.5, 8.6, 3.2, roof, y0 + 18.8));
+  g.add(box(7.6, 0.4, 5.8, wood, 0, y0 + 15, 0));                 // 高欄の帯
+  for (const [x, z] of [[-4.8, 6.05], [0, 6.05], [4.8, 6.05]]) g.add(box(1.4, 2, 0.3, dark, x, y0 + 1.6, z)); // 窓
+  for (const x of [-3, 3]) g.add(box(1.2, 1.6, 0.3, dark, x, y0 + 9.4, 4.15));
+  g.add(box(9, 5.5, 6, wall, 21, 1, 6));                          // 天守門(概略)
+  g.add(hip(12, 9, 2.8, roof, 6.5)); g.children[g.children.length - 1].position.x = 21;
+  g.children[g.children.length - 1].position.z = 6;
+  g.add(box(10, 0.4, 7, stone, 21, 0.9, 6));
+  return root;
+}
+
+// ---------- MapLibre カスタムレイヤー ----------
+const ROOTS = [
+  { key: 'tower',  build: buildTower },
+  { key: 'castle', build: buildCastle },
+];
+const modelsLayer = {
+  id: 'models-3d', type: 'custom', renderingMode: '3d',
+  onAdd(m, gl) {
+    this.map = m; this.camera = new THREE.Camera();
+    this.items = ROOTS.map((r) => {
+      const scene = new THREE.Scene();
+      scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+      const sun = new THREE.DirectionalLight(0xfff4e0, 0.9); sun.position.set(-60, 120, 80); scene.add(sun);
+      scene.add(r.build());
+      const mc = maplibregl.MercatorCoordinate.fromLngLat(SITES[r.key].lngLat, 0);
+      return { key: r.key, scene, mc, scale: mc.meterInMercatorCoordinateUnits() };
+    });
+    this.renderer = new THREE.WebGLRenderer({ canvas: m.getCanvas(), context: gl, antialias: true });
+    this.renderer.autoClear = false;
+  },
+  render(gl, matrix) {
+    const rotX = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+    const proj = new THREE.Matrix4().fromArray(matrix);
+    this.renderer.resetState();
+    for (const it of this.items) {
+      const l = new THREE.Matrix4().makeTranslation(it.mc.x, it.mc.y, it.mc.z)
+        .scale(new THREE.Vector3(it.scale, -it.scale, it.scale)).multiply(rotX);
+      this.camera.projectionMatrix = proj.clone().multiply(l);
+      this.renderer.render(it.scene, this.camera);
+    }
+    this.renderer.resetState();
+  },
+};
+function setupStyle() {
+  if (!map.getLayer('models-3d')) map.addLayer(modelsLayer);
+  applyOsm();
+}
+function applyOsm() {
+  const hide = document.getElementById('chkOsm').checked;
+  for (const l of map.getStyle().layers) {
+    if (l.type === 'fill-extrusion') map.setLayoutProperty(l.id, 'visibility', hide ? 'none' : 'visible');
+  }
+}
+map.on('style.load', setupStyle);
+map.on('error', (e) => console.warn('map error:', e && e.error && e.error.message));
+
+// ---------- ラベル・位置 ----------
+// ---------- First-person water-slide camera ride ----------
+// ---------- Route selection and first-person ride ----------
+const FLIGHT = { start:[137.737183,34.705598], destination:[137.657776,34.765351], duration:22000 };
+let routePick=null,flightStart=0,lastRideFrame=0,flightRunning=false,pitchOffset=0,bearingOffset=0,mapReady=false,maxSpeedKmh=0,arrivalCloseTimer=0;
+const routeNames={start:"Act Tower",destination:"Nukumori Forest"};
+const cameraKeys={w:false,a:false,s:false,d:false};
+const routePins={};
+function makeRoutePin(key,label){const el=document.createElement('div');el.className='route-pin '+key;el.textContent=label;routePins[key]=new maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat(FLIGHT[key==='start'?'start':'destination']).addTo(map)}
+makeRoutePin('start','START');makeRoutePin('end','END');
+function routeDistanceKm(){const a=FLIGHT.start,b=FLIGHT.destination,rad=x=>x*Math.PI/180,dLat=(b[1]-a[1])*Math.PI/180,dLng=(b[0]-a[0])*Math.PI/180,h=Math.sin(dLat/2)**2+Math.cos(rad(a[1]))*Math.cos(rad(b[1]))*Math.sin(dLng/2)**2;return 6371*2*Math.atan2(Math.sqrt(h),Math.sqrt(1-h))}
+function updateRouteReadout(){const a=FLIGHT.start,b=FLIGHT.destination;document.getElementById('startCoord').textContent=routeNames.start+' / '+a[1].toFixed(5)+', '+a[0].toFixed(5);document.getElementById('endCoord').textContent=routeNames.destination+' / '+b[1].toFixed(5)+', '+b[0].toFixed(5);document.getElementById('routeDistance').textContent=routeDistanceKm().toFixed(1)+' km route';routePins.start.setLngLat(a);routePins.end.setLngLat(b)}
+updateRouteReadout();
+function chooseRoutePoint(key){routePick=key;document.getElementById('pickStart').classList.toggle('active',key==='start');document.getElementById('pickEnd').classList.toggle('active',key==='destination');document.getElementById('routeMessage').textContent=key==='start'?'Click the map to place the start point.':'Click the map to place the destination.';document.getElementById('btnFlight').disabled=true;map.getCanvas().style.cursor='crosshair'}
+document.getElementById('pickStart').onclick=()=>chooseRoutePoint('start');
+document.getElementById('pickEnd').onclick=()=>chooseRoutePoint('destination');
+function routePlaceCoordinates(key){if(SITES[key])return SITES[key].lngLat;const f=FAC.find(x=>x.id===key);if(f&&f.lngLat)return f.lngLat;if(key==='nukumori')return FLIGHT.destination;return null}
+function chooseRoutePlace(which,key){const point=routePlaceCoordinates(key);if(!point)return;FLIGHT[which]=point.slice();routeNames[which]=document.getElementById(which==='start'?'startSelect':'endSelect').selectedOptions[0].textContent;routePins[which==='start'?'start':'end'].setLngLat(point);document.getElementById('routeMessage').textContent='Route updated. Press Home to begin.';updateRouteReadout()}
+document.getElementById('startSelect').onchange=e=>chooseRoutePlace('start',e.target.value);
+document.getElementById('endSelect').onchange=e=>chooseRoutePlace('destination',e.target.value);
+document.getElementById('btnFlight').disabled=true;document.getElementById('pickStart').disabled=true;document.getElementById('pickEnd').disabled=true;map.on('load',()=>{mapReady=true;document.getElementById('btnFlight').disabled=false;document.getElementById('pickStart').disabled=false;document.getElementById('pickEnd').disabled=false});
+window.addEventListener('keydown',e=>{if(!flightRunning)return;const k=e.key.toLowerCase();if(k==='w'||k==='a'||k==='s'||k==='d'){e.preventDefault();e.stopPropagation();cameraKeys[k]=true}});
+window.addEventListener('keyup',e=>{const k=e.key.toLowerCase();if(k in cameraKeys)cameraKeys[k]=false});
+window.addEventListener('blur',()=>{Object.keys(cameraKeys).forEach(k=>cameraKeys[k]=false)});
+function averageRideSpeed(){const k=Math.PI*.82;return 28+67*(1-Math.cos(k))/k}
+function closeArrival(){const modal=document.getElementById('arrivalModal');modal.classList.remove('open');modal.setAttribute('aria-hidden','true');clearTimeout(arrivalCloseTimer)}
+document.getElementById('arrivalModal').addEventListener('click',closeArrival);
+function showArrivalSummary(elapsedMs){const seconds=Math.max(.01,elapsedMs/1000),average=averageRideSpeed();document.getElementById('arrivalAverage').textContent=average.toFixed(1);document.getElementById('arrivalMaximum').textContent=Math.max(maxSpeedKmh,95).toFixed(1);document.getElementById('arrivalTime').textContent=seconds.toFixed(1);const modal=document.getElementById('arrivalModal');modal.classList.add('open');modal.setAttribute('aria-hidden','false');clearTimeout(arrivalCloseTimer);arrivalCloseTimer=setTimeout(closeArrival,10000)}function routePoint(t){const a=FLIGHT.start,b=FLIGHT.destination,midLat=(a[1]+b[1])/2,cos=Math.cos(midLat*D2R),dx=(b[0]-a[0])*cos,dy=b[1]-a[1],dist=Math.max(.000001,Math.hypot(dx,dy)),bend=Math.min(700,dist*111320*.08)*Math.sin(Math.PI*t),east=-(dy/dist)*bend,north=(dx/dist)*bend;return[a[0]+(b[0]-a[0])*t+east/(111320*cos),a[1]+(b[1]-a[1])*t+north/111320]}
+function routeBearing(t){const a=routePoint(Math.max(0,t-.001)),b=routePoint(Math.min(1,t+.001)),east=(b[0]-a[0])*Math.cos(((a[1]+b[1])/2)*D2R),north=b[1]-a[1];return Math.atan2(east,north)/D2R}
+function rideCameraOptions(t,u){const pos=routePoint(u),look=routePoint(Math.min(1,u+.008));const altitude=Math.max(24,150-116*t-9*Math.sin(t*Math.PI*6)*Math.sin(t*Math.PI));const lookAltitude=Math.max(0,altitude-8);const c=map.calculateCameraOptionsFromTo(new maplibregl.LngLat(pos[0],pos[1]),altitude,new maplibregl.LngLat(look[0],look[1]),lookAltitude);const ridePitch=Math.max(5,Math.min(85,(c.pitch||60)+10)),levelBlend=Math.min(1,(t*FLIGHT.duration)/1500);c.pitch=Math.max(75,Math.min(85,85+(ridePitch-85)*levelBlend+pitchOffset));c.bearing=routeBearing(u)+bearingOffset;return c}
+function animateFlight(now){if(!flightRunning)return;const dt=Math.min(.05,Math.max(0,(now-lastRideFrame)/1000));lastRideFrame=now;pitchOffset=Math.max(-10,Math.min(10,pitchOffset+((cameraKeys.w?1:0)-(cameraKeys.s?1:0))*40*dt));bearingOffset=Math.max(-70,Math.min(70,bearingOffset+((cameraKeys.d?1:0)-(cameraKeys.a?1:0))*55*dt));const t=Math.min(1,(now-flightStart)/FLIGHT.duration),u=t*t*(3-2*t);map.jumpTo(rideCameraOptions(t,u));const speed=28+67*Math.sin(Math.PI*t*.82);maxSpeedKmh=Math.max(maxSpeedKmh,speed);document.getElementById('flightProgress').style.width=(t*100).toFixed(1)+'%';document.getElementById('flightAltitude').textContent='Speed '+Math.round(speed)+' km/h';document.getElementById('flightStatus').textContent=t<.08?'Dropping from the 30th floor':t<.88?'Rushing along your route':t<1?'Approaching destination':'Arrived';if(t<1)requestAnimationFrame(animateFlight);else{flightRunning=false;Object.keys(cameraKeys).forEach(k=>cameraKeys[k]=false);document.getElementById('btnFlight').textContent='\u5e30\u5b85';document.getElementById('routeMessage').textContent='Ride complete. Choose points or press Home again.';showArrivalSummary(now-flightStart);setTimeout(()=>{if(!flightRunning){document.body.classList.remove('ride-mode');routePins.start.addTo(map);routePins.end.addTo(map);map.easeTo({center:[137.70,34.735],zoom:12.5,pitch:0,bearing:0,duration:1600})}},1800)}}
+document.getElementById('btnFlight').onclick=()=>{if(flightRunning||routePick||!mapReady)return;flightRunning=true;routePick=null;document.getElementById('btnFlight').disabled=false;document.getElementById('pickStart').classList.remove('active');document.getElementById('pickEnd').classList.remove('active');document.getElementById('routeMessage').textContent='';FLIGHT.duration=Math.max(8000,Math.min(45000,routeDistanceKm()*2200));flightStart=lastRideFrame=performance.now();pitchOffset=0;bearingOffset=0;maxSpeedKmh=0;closeArrival();Object.keys(cameraKeys).forEach(k=>cameraKeys[k]=false);document.body.classList.add('ride-mode');routePins.start.remove();routePins.end.remove();document.getElementById('btnFlight').textContent='RIDING...';map.stop();map.jumpTo(rideCameraOptions(0,0));requestAnimationFrame(animateFlight)};
+const sel = document.getElementById('sel');
+const addOpt = (k) => { const o = document.createElement('option'); o.value = k; o.textContent = SITES[k].name; sel.append(o); };
+const markers = {};
+function makeMarker(k, color) {
+  const s = SITES[k], el = document.createElement('div');
+  el.className = color ? 'lbl2' : 'lbl'; el.textContent = s.name;
+  if (color) el.style.background = '#' + color.toString(16).padStart(6, '0');
+  markers[k] = new maplibregl.Marker({ element: el, anchor: 'bottom', offset: [0, s.labelY / 3] }).setLngLat(s.lngLat).addTo(map);
+}
+[['tower', 0x1565c0], ['castle', 0x795548]].forEach(([k, c]) => { makeMarker(k, c); addOpt(k); });
+const status = (t) => { document.getElementById('coords').innerHTML = t; };
+function showCoords() { const s = SITES[sel.value]; if (s) status(s.name.split(' ')[0] + ': ' + s.lngLat[1].toFixed(5) + ', ' + s.lngLat[0].toFixed(5)); }
+function setSite(key, lngLat) {
+  SITES[key].lngLat = lngLat; markers[key].setLngLat(lngLat);
+  const it = modelsLayer.items.find((i) => i.key === key);
+  if (it) { it.mc = maplibregl.MercatorCoordinate.fromLngLat(lngLat, 0); it.scale = it.mc.meterInMercatorCoordinateUnits(); }
+  showCoords(); map.triggerRepaint();
+}
+let placing = null;
+document.getElementById('btnPlace').onclick = () => { placing = sel.value; map.getCanvas().style.cursor = 'crosshair'; status('置きたい位置を地図上でクリック'); };
+map.on('click', (e) => { if (routePick) { const point=[e.lngLat.lng,e.lngLat.lat]; if (point[0]<137.3||point[0]>138.05||point[1]<34.4||point[1]>35.05) { document.getElementById('routeMessage').textContent='Choose a point within the Hamamatsu area.'; return; } FLIGHT[routePick] = point; routeNames[routePick] = 'Map point'; document.getElementById(routePick === 'start' ? 'startSelect' : 'endSelect').value = ''; routePins[routePick === 'start' ? 'start' : 'end'].setLngLat(point); routePick = null; document.getElementById('pickStart').classList.remove('active'); document.getElementById('pickEnd').classList.remove('active'); document.getElementById('routeMessage').textContent = 'Route updated. Press Home to begin.'; document.getElementById('btnFlight').disabled = false; map.getCanvas().style.cursor = ''; updateRouteReadout(); return; } if (!placing) return; setSite(placing, [e.lngLat.lng, e.lngLat.lat]); placing = null; map.getCanvas().style.cursor = ''; });
+
+// ---------- 周辺施設(Nominatim で位置と輪郭を取得) ----------
+const FAC = [
+  { id: 'aeon-ichino', name: 'イオンモール浜松市野', q: ['イオンモール浜松市野'], type: 'mall', color: 0xc4006e, h: 20, w: 200, d: 120 },
+  { id: 'aeon-shizuro', name: 'イオンモール浜松志都呂', q: ['イオンモール浜松志都呂', 'イオン浜松志都呂店'], type: 'mall', color: 0xc4006e, h: 20, w: 200, d: 120 },
+  { id: 'aeon-irino', name: '\u30a4\u30aa\u30f3\u6d5c\u677e\u897f\u5e97', q: [], lngLat: [137.6899722, 34.6992222], type: 'mall', color: 0xc4006e, h: 18, w: 160, d: 100 },
+  { id: 'aeon-aoi', name: '\u30a4\u30aa\u30f3\u30bf\u30a6\u30f3\u6d5c\u677e\u8475', q: [], lngLat: [137.706994, 34.768174], type: 'mall', color: 0xc4006e, h: 18, w: 160, d: 100 },
+  { id: 'koto-jhs', name: '湖東中学校', q: ['浜松市立湖東中学校', '湖東中学校 浜松'], type: 'school', color: 0xf9a825, h: 14, w: 90, d: 30 },
+  { id: 'johoku', name: '城北工業高校', q: ['静岡県立浜松城北工業高等学校', '浜松城北工業高校'], type: 'school', color: 0x455a64, h: 16, w: 100, d: 35 },
+  { id: 'nukumori', name: 'ぬくもりの森', q: ['ぬくもりの森 浜松', '浜松市 ぬくもりの森'], type: 'forest', color: 0x2e7d32, h: 6, w: 50, d: 30 },
+  { id: 'palpal', name: '浜名湖パルパルの観覧車', q: ['浜名湖パルパル 観覧車', '浜名湖パルパル'], type: 'wheel', color: 0xe91e63 },
+  { id: 'preha', name: 'プレ葉ウォーク浜北', q: ['プレ葉ウォーク浜北'], type: 'mall', color: 0xe65100, h: 16, w: 180, d: 90 },
+  { id: 'sunstreet', name: 'サンストリート浜北', q: ['サンストリート浜北'], type: 'mall', color: 0x1e88e5, h: 12, w: 180, d: 90 },
+  { id: 'zoo', name: '浜松市動物園', q: ['浜松市動物園'], type: 'zoo', color: 0xff7043, w: 160, d: 120 },
+  { id: 'park-manyo', name: '万葉の森公園', q: ['万葉の森公園 浜松'], type: 'forest', color: 0x2e7d32, h: 6, w: 260, d: 220 },
+  { id: 'park-miyakoda', name: '都田総合公園', q: ['都田総合公園 浜松'], type: 'forest', color: 0x2e7d32, h: 6, w: 420, d: 320 },
+  { id: 'park-hamanako', name: '浜名湖ガーデンパーク', q: ['浜名湖ガーデンパーク'], type: 'forest', color: 0x2e7d32, h: 6, w: 520, d: 360 },
+  { id: 'kamoe-art', name: '鴨江アートセンター', q: ['鴨江アートセンター 浜松'], type: 'school', color: 0x8e24aa, h: 12, w: 80, d: 60 },
+  { id: 'hamamatsu-innovation-cube', name: '浜松イノベーションキューブ', q: ['浜松イノベーションキューブ'], type: 'school', color: 0x00897b, h: 18, w: 100, d: 70 },
+  { id: 'elem-shirawaki', name: '白脇小学校', q: ['浜松市立白脇小学校', '白脇小学校 浜松'], type: 'school', color: 0xf9a825, h: 14, w: 90, d: 65 },
+  { id: 'elem-kaba', name: '蒲小学校', q: ['浜松市立蒲小学校', '蒲小学校 浜松'], type: 'school', color: 0xf9a825, h: 14, w: 90, d: 65 },
+  { id: 'elem-uchino', name: '内野小学校', q: ['浜松市立内野小学校', '内野小学校 浜松'], type: 'school', color: 0xf9a825, h: 14, w: 90, d: 65 },
+  { id: 'elem-kamijima', name: '上島小学校', q: ['浜松市立上島小学校', '上島小学校 浜松'], type: 'school', color: 0xf9a825, h: 14, w: 90, d: 65 },
+  { id: 'elem-sekishi', name: '積志小学校', q: ['浜松市立積志小学校', '積志小学校 浜松'], type: 'school', color: 0xf9a825, h: 14, w: 90, d: 65 },
+  { id: 'elem-yoshin', name: '与進小学校', q: ['浜松市立与進小学校', '与進小学校 浜松'], type: 'school', color: 0xf9a825, h: 14, w: 90, d: 65 },
+  { id: 'elem-hatsuoi', name: '初生小学校', q: ['浜松市立初生小学校', '初生小学校 浜松'], type: 'school', color: 0xf9a825, h: 14, w: 90, d: 65 },
+  { id: 'elem-hirosawa', name: '広沢小学校', q: ['浜松市立広沢小学校', '広沢小学校 浜松'], type: 'school', color: 0xf9a825, h: 14, w: 90, d: 65 },
+  { id: 'elem-uto', name: '雄踏小学校', q: ['浜松市立雄踏小学校', '雄踏小学校 浜松'], type: 'school', color: 0xf9a825, h: 14, w: 90, d: 65 },
+  { id: 'elem-kami', name: '可美小学校', q: ['浜松市立可美小学校', '可美小学校 浜松'], type: 'school', color: 0xf9a825, h: 14, w: 90, d: 65 },
+  { id: 'jhs-hamana', name: '浜名中学校', q: ['浜松市立浜名中学校', '浜名中学校 浜松'], type: 'school', color: 0x455a64, h: 16, w: 100, d: 70 },
+  { id: 'jhs-mikatabara', name: '三方原中学校', q: ['浜松市立三方原中学校', '三方原中学校 浜松'], type: 'school', color: 0x455a64, h: 16, w: 100, d: 70 },
+  { id: 'jhs-hamakita-hokubu', name: '浜北北部中学校', q: ['浜松市立浜北北部中学校', '浜北北部中学校'], type: 'school', color: 0x455a64, h: 16, w: 100, d: 70 },
+  { id: 'jhs-hikuma', name: '曳馬中学校', q: ['浜松市立曳馬中学校', '曳馬中学校 浜松'], type: 'school', color: 0x455a64, h: 16, w: 100, d: 70 },
+  { id: 'jhs-nanbu', name: '南部中学校', q: ['浜松市立南部中学校', '南部中学校 浜松'], type: 'school', color: 0x455a64, h: 16, w: 100, d: 70 },
+  { id: 'jhs-kitahama', name: '北浜中学校', q: ['浜松市立北浜中学校', '北浜中学校 浜松'], type: 'school', color: 0x455a64, h: 16, w: 100, d: 70 },
+  { id: 'jhs-hokusei', name: '北星中学校', q: ['浜松市立北星中学校', '北星中学校 浜松'], type: 'school', color: 0x455a64, h: 16, w: 100, d: 70 },
+  { id: 'jhs-sekishi', name: '積志中学校', q: ['浜松市立積志中学校', '積志中学校 浜松'], type: 'school', color: 0x455a64, h: 16, w: 100, d: 70 },
+  { id: 'jhs-yoshin', name: '与進中学校', q: ['浜松市立与進中学校', '与進中学校 浜松'], type: 'school', color: 0x455a64, h: 16, w: 100, d: 70 },
+  { id: 'jhs-irino', name: '入野中学校', q: ['浜松市立入野中学校', '入野中学校 浜松'], type: 'school', color: 0x455a64, h: 16, w: 100, d: 70 },
+  { id: 'hs-hamamatsu-city', name: '浜松市立高等学校', q: ['浜松市立高等学校'], type: 'school', color: 0x6a1b9a, h: 18, w: 120, d: 80 },
+  { id: 'hs-hamamatsu-kita', name: '静岡県立浜松北高等学校', q: ['静岡県立浜松北高等学校'], type: 'school', color: 0x6a1b9a, h: 18, w: 120, d: 80 },
+  { id: 'hs-hamamatsu-nishi', name: '静岡県立浜松西高等学校', q: ['静岡県立浜松西高等学校'], type: 'school', color: 0x6a1b9a, h: 18, w: 120, d: 80 },
+  { id: 'hs-hamamatsu-minami', name: '静岡県立浜松南高等学校', q: ['静岡県立浜松南高等学校'], type: 'school', color: 0x6a1b9a, h: 18, w: 120, d: 80 },
+  { id: 'hs-hamamatsu-tech', name: '静岡県立浜松工業高等学校', q: ['静岡県立浜松工業高等学校'], type: 'school', color: 0x6a1b9a, h: 18, w: 120, d: 80 },
+  { id: 'hs-hamamatsu-commerce', name: '静岡県立浜松商業高等学校', q: ['静岡県立浜松商業高等学校'], type: 'school', color: 0x6a1b9a, h: 18, w: 120, d: 80 },
+  { id: 'hs-hamana', name: '静岡県立浜名高等学校', q: ['静岡県立浜名高等学校'], type: 'school', color: 0x6a1b9a, h: 18, w: 120, d: 80 },
+  { id: 'hs-gakuin', name: '浜松学院高等学校', q: ['浜松学院高等学校'], type: 'school', color: 0x6a1b9a, h: 18, w: 120, d: 80 },
+  { id: 'hs-kaiseikan', name: '浜松開誠館高等学校', q: ['浜松開誠館高等学校'], type: 'school', color: 0x6a1b9a, h: 18, w: 120, d: 80 },
+  { id: 'uni-shizuoka-hamamatsu', name: '静岡大学浜松キャンパス', q: ['静岡大学浜松キャンパス'], type: 'school', color: 0x00897b, h: 22, w: 180, d: 120 },
+  { id: 'uni-shizuoka-culture-arts', name: '静岡文化芸術大学', q: ['静岡文化芸術大学'], type: 'school', color: 0x00897b, h: 22, w: 160, d: 110 },
+  { id: 'uni-tokoha-hamamatsu', name: '常葉大学浜松キャンパス', q: ['常葉大学浜松キャンパス'], type: 'school', color: 0x00897b, h: 22, w: 180, d: 120 },
+  { id: 'uni-hamamatsu-gakuin', name: '浜松学院大学', q: ['浜松学院大学'], type: 'school', color: 0x00897b, h: 22, w: 160, d: 110 },
+  { id: 'uni-hamamatsu-med', name: '浜松医科大学', q: ['浜松医科大学'], type: 'school', color: 0x00897b, h: 22, w: 180, d: 120 },
+  { id: 'hospital-seirei-mikatabara', name: '聖隷三方原病院', q: ['聖隷三方原病院'], type: 'school', color: 0xd32f2f, h: 22, w: 160, d: 120 },
+  { id: 'hospital-seirei-hamamatsu', name: '聖隷浜松病院', q: ['聖隷浜松病院'], type: 'school', color: 0xd32f2f, h: 20, w: 150, d: 110 },
+  { id: 'hospital-hamamatsu-university', name: '浜松医科大学医学部附属病院', q: ['浜松医科大学医学部附属病院'], type: 'school', color: 0xd32f2f, h: 22, w: 170, d: 130 },
+  { id: 'hospital-hamamatsu-medical-center', name: '浜松医療センター', q: ['浜松医療センター'], type: 'school', color: 0xd32f2f, h: 20, w: 150, d: 110 },
+];
+function populateRouteOptions(){const choices=[{key:'tower',name:'\u30a2\u30af\u30c8\u30bf\u30ef\u30fc'},{key:'castle',name:'\u6d5c\u677e\u57ce'},...FAC.map(f=>({key:f.id,name:f.name}))];for(const [id,defaultKey] of [['startSelect','tower'],['endSelect','nukumori']]){const select=document.getElementById(id);select.replaceChildren();for(const item of choices){const option=document.createElement('option');option.value=item.key;option.textContent=item.name;option.disabled=!routePlaceCoordinates(item.key);select.append(option)}select.value=defaultKey}}
+populateRouteOptions();const MLAT = 111320;
+function bboxOf(g) {
+  let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+  (function walk(c) { if (typeof c[0] === 'number') { x0 = Math.min(x0, c[0]); x1 = Math.max(x1, c[0]); y0 = Math.min(y0, c[1]); y1 = Math.max(y1, c[1]); } else c.forEach(walk); })(g.coordinates);
+  return [x0, y0, x1, y1];
+}
+function slab(shapes, y, h, mat) {
+  const grp = new THREE.Group();
+  for (const sh of shapes) {
+    const m = new THREE.Mesh(new THREE.ExtrudeGeometry(sh, { depth: h, bevelEnabled: false }), mat);
+    m.rotation.x = -Math.PI / 2; m.position.y = y; grp.add(m);
+  }
+  return grp;
+}
+function buildWheel() {
+  const g = new THREE.Group(), R = 22, H = 26, steel = lam(0xf2f2f2), w = new THREE.Group();
+  w.position.y = H; g.add(w);
+  w.add(new THREE.Mesh(new THREE.TorusGeometry(R, 0.5, 8, 64), steel));
+  w.add(new THREE.Mesh(new THREE.TorusGeometry(R * 0.5, 0.35, 8, 48), steel));
+  for (let i = 0; i < 16; i++) {
+    const a = i / 16 * Math.PI * 2;
+    const sp = new THREE.Mesh(new THREE.BoxGeometry(R, 0.3, 0.3), steel);
+    sp.position.set(Math.cos(a) * R / 2, Math.sin(a) * R / 2, 0); sp.rotation.z = a; w.add(sp);
+    const gd = new THREE.Mesh(new THREE.BoxGeometry(2.4, 2.4, 2.4), lam(new THREE.Color().setHSL(i / 16, 0.8, 0.55)));
+    gd.position.set(Math.cos(a) * R, Math.sin(a) * R - 1.6, 0); w.add(gd);
+  }
+  for (const s of [-1, 1]) for (const z of [-2.5, 2.5]) {
+    const leg = new THREE.Mesh(new THREE.BoxGeometry(1.2, H + 2, 1.2), lam(0xd0d4d8));
+    leg.position.set(s * 5, H / 2, z); leg.rotation.z = -s * 0.2; g.add(leg);
+  }
+  g.add(box(30, 1, 14, lam(0x9aa0a6), 0, 0, 0)); g.rotation.y = 0.35;
+  return g;
+}
+function buildFac(f, geom, lng0, lat0) {
+  const g = new THREE.Group(), mLng = MLAT * Math.cos(lat0 * D2R);
+  let shapes = [];
+  if (geom && (geom.type === 'Polygon' || geom.type === 'MultiPolygon')) {
+    const polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
+    shapes = polys.map((pl) => { const sh = new THREE.Shape(); pl[0].forEach(([x, y], i) => { const px = (x - lng0) * mLng, py = (y - lat0) * MLAT; i ? sh.lineTo(px, py) : sh.moveTo(px, py); }); return sh; });
+  } else {
+    const w = f.w || 80, d = f.d || 50, sh = new THREE.Shape();
+    sh.moveTo(-w / 2, -d / 2); sh.lineTo(w / 2, -d / 2); sh.lineTo(w / 2, d / 2); sh.lineTo(-w / 2, d / 2); shapes = [sh];
+  }
+  const cream = lam(0xf1ece3);
+  if (f.type === 'mall' || f.type === 'school') {
+    g.add(slab(shapes, 0, f.h - 3, cream)); g.add(slab(shapes, f.h - 3, 3, lam(f.color))); g.add(slab(shapes, f.h, 0.8, lam(0x8d949c)));
+  } else if (f.type === 'zoo') {
+    g.add(slab(shapes, 0, 0.5, lam(0x86c765)));
+    g.add(box(24, 6, 16, cream, 0, 0.5, 0)); g.add(hip(30, 22, 5, lam(0xc0392b), 6.5));
+  } else if (f.type === 'forest') {
+    g.add(slab(shapes, 0, 6, lam(0xb98b5a))); g.add(slab(shapes, 6, 1, lam(0x2e7d32)));
+    for (let i = 0; i < 10; i++) {
+      const a = i / 10 * Math.PI * 2, r = 26 + (i % 3) * 6, tx = Math.cos(a) * r, tz = Math.sin(a) * r;
+      const tr = ecyl(0.5, 0.5, 3, lam(0x6d4c41), 0, 6); tr.position.x = tx; tr.position.z = tz; g.add(tr);
+      const cone = new THREE.Mesh(new THREE.ConeGeometry(3.2, 9, 8), lam(0x2e7d32)); cone.position.set(tx, 7.5, tz); g.add(cone);
+    }
+  } else if (f.type === 'wheel') g.add(buildWheel());
+  // 強調: 光の柱 + 地上リング
+  g.add(ecyl(2.5, 2.5, 120, new THREE.MeshBasicMaterial({ color: f.color, transparent: true, opacity: 0.35, depthWrite: false }), 0, 12));
+  const ring = new THREE.Mesh(new THREE.RingGeometry(36, 40, 48), new THREE.MeshBasicMaterial({ color: f.color, side: THREE.DoubleSide, transparent: true, opacity: 0.8 }));
+  ring.rotation.x = -Math.PI / 2; ring.position.y = 0.3; g.add(ring);
+  return g;
+}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+async function geocode(q) {
+  const u = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&polygon_geojson=1&accept-language=ja&countrycodes=jp'
+    + '&viewbox=137.5,34.95,137.95,34.55&bounded=1&q=' + encodeURIComponent(q);
+  const r = await fetch(u); return (await r.json())[0] || null;
+}
+async function loadFacilities() {
+  const missing = [];
+  for (let i = 0; i < FAC.length; i++) {
+    const f = FAC[i]; status('施設を検索中 ' + (i + 1) + '/' + FAC.length + ': ' + f.name);
+    try {
+      let r = f.lngLat ? { lon: String(f.lngLat[0]), lat: String(f.lngLat[1]), geojson: null } : null;
+      if (!f.lngLat) for (const q of f.q) { r = await geocode(q); await sleep(1100); if (r) break; }
+      if (!r) { missing.push(f.name); continue; }
+      let geom = r.geojson, lng0 = +r.lon, lat0 = +r.lat;
+      if (geom && (geom.type === 'Polygon' || geom.type === 'MultiPolygon')) {
+        const [x0, y0, x1, y1] = bboxOf(geom);
+        if ((x1 - x0) * MLAT * 0.82 > 1500 || (y1 - y0) * MLAT > 1500) geom = null;
+        else { lng0 = (x0 + x1) / 2; lat0 = (y0 + y1) / 2; }
+      }
+      SITES[f.id] = { lngLat: [lng0, lat0], zoom: 17, pitch: 60, bearing: 30, name: f.name, labelY: -150 };
+      for (const id of ["startSelect", "endSelect"]) { const option = document.querySelector("#" + id + " option[value=\"" + f.id + "\"]"); if (option) option.disabled = false; }
+      const scene = new THREE.Scene();
+      scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+      const sun = new THREE.DirectionalLight(0xfff4e0, 0.9); sun.position.set(-60, 120, 80); scene.add(sun);
+      scene.add(buildFac(f, geom, lng0, lat0));
+      const mc = maplibregl.MercatorCoordinate.fromLngLat([lng0, lat0], 0);
+      modelsLayer.items.push({ key: f.id, scene, mc, scale: mc.meterInMercatorCoordinateUnits() });
+      makeMarker(f.id, f.color); addOpt(f.id); map.triggerRepaint();
+    } catch (e) { console.warn('facility failed', f.name, e); missing.push(f.name); }
+  }
+  status(missing.length ? '位置が見つからなかった施設: ' + missing.join('、') + '(「位置を指定」で配置できます)' : '全施設を配置しました');
+}
+map.once('idle', loadFacilities);
+
+// ---------- 操作 ----------
+let orbiting = false;
+const stop = () => { orbiting = false; };
+sel.onchange = () => {
+  stop(); focus = sel.value; const s = SITES[focus]; showCoords();
+  map.flyTo({ center: s.lngLat, zoom: s.zoom, pitch: s.pitch, bearing: s.bearing, duration: 3000, essential: true });
+};
+document.getElementById('btnTop').onclick = () => {
+  stop(); map.flyTo({ center: SITES[focus].lngLat, zoom: SITES[focus].zoom - 0.5, pitch: 0, bearing: 0, duration: 2000 });
+};
+document.getElementById('btnOrbit').onclick = () => {
+  if (orbiting) { stop(); return; }
+  orbiting = true;
+  map.easeTo({ center: SITES[focus].lngLat, pitch: 65, zoom: SITES[focus].zoom, duration: 1000 });
+  const step = () => { if (!orbiting) return; map.setBearing(map.getBearing() + 0.25); requestAnimationFrame(step); };
+  setTimeout(step, 1000);
+};
+map.on('mousedown', stop); map.on('touchstart', stop);
+document.getElementById('chkOsm').onchange = applyOsm;
+</script>
+</body>
+</html>
