@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>浜松 アクトタワー & 浜松城 3Dモデル</title>
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
+<style>
+  #map { background: linear-gradient(to bottom, #2f86e0 0%, #6fb4f2 45%, #cfe8ff 100%); }
+  .lbl2 { color: #fff; font-weight: bold; font-size: 12px; padding: 2px 8px; border-radius: 10px; border: 1px solid #fff; white-space: nowrap; pointer-events: none; box-shadow: 0 1px 4px rgba(0,0,0,.5); }
+  html, body, #map { margin: 0; width: 100%; height: 100%; font-family: system-ui, "Hiragino Sans", "Yu Gothic", sans-serif; }
+  #panel { position: absolute; top: 12px; left: 12px; z-index: 5; background: rgba(20,24,32,.85); color: #fff; padding: 12px 14px; border-radius: 10px; max-width: 250px; font-size: 12px; line-height: 1.6; }
+  #panel h1 { font-size: 15px; margin: 0 0 6px; }
+  #panel p { margin: 0 0 8px; opacity: .85; }
+  #panel button { margin: 2px 4px 2px 0; padding: 6px 10px; border: 0; border-radius: 6px; background: #3b82f6; color: #fff; font-size: 12px; cursor: pointer; }
+  #panel button:hover { background: #2563eb; }
+  #panel label { display: block; margin-top: 6px; }
+  .lbl { color: #fff; font-weight: bold; font-size: 14px; text-shadow: 0 0 4px #000, 0 0 4px #000; white-space: nowrap; pointer-events: none; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="panel">
+  <h1>浜松 3Dモデル</h1>
+  <p>アクトタワー・浜松城と、周辺の施設を色つきの3Dモデルで表示します(高さ・形は概算の近似)。施設の位置は起動後に自動検索します。</p>
+  <select id="sel" style="width:100%;margin-bottom:4px"></select><br>
+  <button id="btnTop">真上</button>
+  <button id="btnOrbit">周回 ON/OFF</button>
+  <label><input type="checkbox" id="chkOsm"> 地図の建物(OSM)を隠す</label>
+  <div style="margin-top:8px;border-top:1px solid #556;padding-top:6px">位置の調整(クリックで指定)<br>
+    <button id="btnPlace">選択中の建物の位置を指定</button>
+    <div id="coords" style="opacity:.85;margin-top:4px;font-size:11px"></div></div>
+</div>
+
+<script>
+const SITES = {
+  tower:  { lngLat: [137.73722, 34.70560],  zoom: 16.8, pitch: 68, bearing: 40,  name: 'アクトタワー (212m)', labelY: -230 },
+  castle: { lngLat: [137.72546, 34.71173], zoom: 17.6, pitch: 68, bearing: 160, name: '浜松城',               labelY: -150 },
+};
+let focus = 'tower';
+
+const map = new maplibregl.Map({
+  container: 'map', style: 'https://tiles.openfreemap.org/styles/liberty',
+  center: SITES.tower.lngLat, zoom: 16.3, pitch: 68, bearing: 40, maxPitch: 85,
+});
+map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
+
+// ---------- three.js 部品 ----------
+const D2R = Math.PI / 180;
+function winTex(base, line, cols, rows, w = 64, h = 64) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const g = c.getContext('2d');
+  g.fillStyle = base; g.fillRect(0, 0, w, h);
+  g.fillStyle = line; g.fillRect(0, h - 5, w, 5);                 // 階の境目
+  g.fillRect(0, 0, 3, h);                                         // 縦マリオン
+  g.fillStyle = 'rgba(255,255,255,.28)'; g.fillRect(6, 6, w - 12, 14); // 反射
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(cols, rows);
+  return t;
+}
+const lam = (color, map) => new THREE.MeshLambertMaterial({ color, map });
+function box(w, h, d, mat, x, y, z) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+  m.position.set(x, y + h / 2, z); return m;
+}
+function ecyl(rx, rz, h, mat, y, seg = 64, rTop) {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(rTop ?? 1, 1, h, seg), mat);
+  m.scale.set(rx, 1, rz); m.position.y = y + h / 2; return m;
+}
+// 寄棟風の瓦屋根(四角錐)
+function hip(w, d, h, mat, y) {
+  const m = new THREE.Mesh(new THREE.ConeGeometry(0.7071, h, 4), mat);
+  m.rotation.y = Math.PI / 4; m.scale.set(w, 1, d); m.position.y = y + h / 2; return m;
+}
+// 千鳥破風(三角屋根の飾り)
+function gable(w, h, depth, wallMat, roofMat, x, y, z) {
+  const s = new THREE.Shape(); s.moveTo(-w / 2, 0); s.lineTo(w / 2, 0); s.lineTo(0, h); s.closePath();
+  const geo = new THREE.ExtrudeGeometry(s, { depth, bevelEnabled: false });
+  const wall = new THREE.Mesh(geo, wallMat), grp = new THREE.Group();
+  grp.add(wall);
+  const r = new THREE.Mesh(new THREE.ConeGeometry(w * 0.62, h * 1.1, 4), roofMat);
+  r.rotation.y = Math.PI / 4; r.scale.set(1, 1, depth / (w * 0.88)); r.position.set(0, h * 0.55, depth / 2);
+  grp.add(r); grp.position.set(x, y, z); return grp;
+}
+
+// ---------- アクトタワー ----------
+function buildTower() {
+  const g = new THREE.Group();
+  const glass = lam(0x6fa8d6, winTex('#4f86b8', '#dfe8f0', 1, 1)); glass.map.repeat.set(26, 33);
+  const podium = lam(0xd9d3c5, winTex('#cfc8b8', '#8a8478', 1, 1)); podium.map.repeat.set(14, 7);
+  const band = lam(0x24384c), crown = lam(0xeef2f6), white = lam(0xffffff);
+  g.add(box(92, 40, 62, podium, 0, 0, 0));                        // 低層部(アクトプラザ)
+  g.add(box(64, 22, 46, lam(0xe4e0d6), 44, 0, 26));               // コングレスセンター側(概略)
+  g.add(box(58, 30, 54, lam(0xc9c3b6), -40, 0, 50));              // 大ホール側(概略)
+  g.add(ecyl(32, 26, 146, glass, 40));                            // 本体(ガラス)
+  g.add(ecyl(32.4, 26.4, 8, band, 181));                          // 展望回廊の帯
+  g.add(ecyl(24, 20, 16, crown, 189, 64, 0.82));                  // 頂部
+  g.add(ecyl(0.9, 0.9, 12, white, 200.8, 12));                    // 塔屋
+  g.add(ecyl(1.4, 1.4, 1, lam(0xd22b2b), 208, 12));               // 航空障害灯
+  g.rotation.y = -20 * D2R;
+  return g;
+}
+
+// ---------- 浜松城 ----------
+function buildCastle() {
+  const root = new THREE.Group(), g = new THREE.Group();
+  const HILL = 25;                                                // 山の高さ(m)
+  g.position.y = HILL; root.add(g);
+  const hill = ecyl(95, 80, HILL, lam(0x6a9150), 0, 48, 0.38);    // 裾野→山頂へ細くなる円錐台
+  root.add(hill);
+  const stone = lam(0x8c8677), stone2 = lam(0x9a9484), wall = lam(0xf3efe4);
+  const roof = lam(0x3a4048), wood = lam(0x4a3b2e), grass = lam(0x5f8f4a), dark = lam(0x2b2f36);
+  g.add(box(50, 0.6, 40, grass, 0, 0, 0));                        // 山頂の芝地
+  g.add(box(30, 4, 26, stone, 0, 1, 0));                          // 天守台(石垣)下段
+  g.add(box(26, 4, 22, stone2, 0, 5, 0));                         // 天守台 上段
+  const y0 = 9;
+  g.add(box(15, 5.5, 12, wall, 0, y0, 0));                        // 1層
+  g.add(hip(20, 17, 3.2, roof, y0 + 5.5));                        // 1層目の屋根
+  g.add(gable(8, 3.4, 3, wall, roof, 0, y0 + 5.5, 6.3));          // 千鳥破風
+  g.add(box(10.5, 4.2, 8.2, wall, 0, y0 + 8.4, 0));               // 2層
+  g.add(hip(14.5, 12, 2.8, roof, y0 + 12.6));
+  g.add(box(7.2, 3.6, 5.4, wall, 0, y0 + 15.2, 0));               // 3層(最上階)
+  g.add(hip(10.5, 8.6, 3.2, roof, y0 + 18.8));
+  g.add(box(7.6, 0.4, 5.8, wood, 0, y0 + 15, 0));                 // 高欄の帯
+  for (const [x, z] of [[-4.8, 6.05], [0, 6.05], [4.8, 6.05]]) g.add(box(1.4, 2, 0.3, dark, x, y0 + 1.6, z)); // 窓
+  for (const x of [-3, 3]) g.add(box(1.2, 1.6, 0.3, dark, x, y0 + 9.4, 4.15));
+  g.add(box(9, 5.5, 6, wall, 21, 1, 6));                          // 天守門(概略)
+  g.add(hip(12, 9, 2.8, roof, 6.5)); g.children[g.children.length - 1].position.x = 21;
+  g.children[g.children.length - 1].position.z = 6;
+  g.add(box(10, 0.4, 7, stone, 21, 0.9, 6));
+  return root;
+}
+
+// ---------- MapLibre カスタムレイヤー ----------
+const ROOTS = [
+  { key: 'tower',  build: buildTower },
+  { key: 'castle', build: buildCastle },
+];
+const modelsLayer = {
+  id: 'models-3d', type: 'custom', renderingMode: '3d',
+  onAdd(m, gl) {
+    this.map = m; this.camera = new THREE.Camera();
+    this.items = ROOTS.map((r) => {
+      const scene = new THREE.Scene();
+      scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+      const sun = new THREE.DirectionalLight(0xfff4e0, 0.9); sun.position.set(-60, 120, 80); scene.add(sun);
+      scene.add(r.build());
+      const mc = maplibregl.MercatorCoordinate.fromLngLat(SITES[r.key].lngLat, 0);
+      return { key: r.key, scene, mc, scale: mc.meterInMercatorCoordinateUnits() };
+    });
+    this.renderer = new THREE.WebGLRenderer({ canvas: m.getCanvas(), context: gl, antialias: true });
+    this.renderer.autoClear = false;
+  },
+  render(gl, matrix) {
+    const rotX = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+    const proj = new THREE.Matrix4().fromArray(matrix);
+    this.renderer.resetState();
+    for (const it of this.items) {
+      const l = new THREE.Matrix4().makeTranslation(it.mc.x, it.mc.y, it.mc.z)
+        .scale(new THREE.Vector3(it.scale, -it.scale, it.scale)).multiply(rotX);
+      this.camera.projectionMatrix = proj.clone().multiply(l);
+      this.renderer.render(it.scene, this.camera);
+    }
+    this.renderer.resetState();
+  },
+};
+function setupStyle() {
+  if (!map.getLayer('models-3d')) map.addLayer(modelsLayer);
+  applyOsm();
+}
+function applyOsm() {
+  const hide = document.getElementById('chkOsm').checked;
+  for (const l of map.getStyle().layers) {
+    if (l.type === 'fill-extrusion') map.setLayoutProperty(l.id, 'visibility', hide ? 'none' : 'visible');
+  }
+}
+map.on('style.load', setupStyle);
+map.on('error', (e) => console.warn('map error:', e && e.error && e.error.message));
+
+// ---------- ラベル・位置 ----------
+const sel = document.getElementById('sel');
+const addOpt = (k) => { const o = document.createElement('option'); o.value = k; o.textContent = SITES[k].name; sel.append(o); };
+const markers = {};
+function makeMarker(k, color) {
+  const s = SITES[k], el = document.createElement('div');
+  el.className = color ? 'lbl2' : 'lbl'; el.textContent = s.name;
+  if (color) el.style.background = '#' + color.toString(16).padStart(6, '0');
+  markers[k] = new maplibregl.Marker({ element: el, anchor: 'bottom', offset: [0, s.labelY / 3] }).setLngLat(s.lngLat).addTo(map);
+}
+['tower', 'castle'].forEach((k) => { makeMarker(k); addOpt(k); });
+const status = (t) => { document.getElementById('coords').innerHTML = t; };
+function showCoords() { const s = SITES[sel.value]; if (s) status(s.name.split(' ')[0] + ': ' + s.lngLat[1].toFixed(5) + ', ' + s.lngLat[0].toFixed(5)); }
+function setSite(key, lngLat) {
+  SITES[key].lngLat = lngLat; markers[key].setLngLat(lngLat);
+  const it = modelsLayer.items.find((i) => i.key === key);
+  if (it) { it.mc = maplibregl.MercatorCoordinate.fromLngLat(lngLat, 0); it.scale = it.mc.meterInMercatorCoordinateUnits(); }
+  showCoords(); map.triggerRepaint();
+}
+let placing = null;
+document.getElementById('btnPlace').onclick = () => { placing = sel.value; map.getCanvas().style.cursor = 'crosshair'; status('置きたい位置を地図上でクリック'); };
+map.on('click', (e) => { if (!placing) return; setSite(placing, [e.lngLat.lng, e.lngLat.lat]); placing = null; map.getCanvas().style.cursor = ''; });
+
+// ---------- 周辺施設(Nominatim で位置と輪郭を取得) ----------
+const FAC = [
+  { id: 'aeon-ichino', name: 'イオンモール浜松市野', q: ['イオンモール浜松市野'], type: 'mall', color: 0xc4006e, h: 20, w: 200, d: 120 },
+  { id: 'aeon-shizuro', name: 'イオンモール浜松志都呂', q: ['イオンモール浜松志都呂', 'イオン浜松志都呂店'], type: 'mall', color: 0xc4006e, h: 20, w: 200, d: 120 },
+  { id: 'aeon-irino', name: 'イオンモール入野', q: ['イオンモール入野', 'イオン浜松入野店'], type: 'mall', color: 0xc4006e, h: 18, w: 160, d: 100 },
+  { id: 'aeon-aoi', name: 'イオンモール浜松葵', q: ['イオンモール浜松葵', 'イオン浜松葵店'], type: 'mall', color: 0xc4006e, h: 18, w: 160, d: 100 },
+  { id: 'koto-jhs', name: '湖東中学校', q: ['浜松市立湖東中学校', '湖東中学校 浜松'], type: 'school', color: 0xf9a825, h: 14, w: 90, d: 30 },
+  { id: 'johoku', name: '城北工業高校', q: ['静岡県立浜松城北工業高等学校', '浜松城北工業高校'], type: 'school', color: 0x455a64, h: 16, w: 100, d: 35 },
+  { id: 'nukumori', name: 'ぬくもりの森', q: ['ぬくもりの森 浜松', '浜松市 ぬくもりの森'], type: 'forest', color: 0x2e7d32, h: 6, w: 50, d: 30 },
+  { id: 'palpal', name: '浜名湖パルパルの観覧車', q: ['浜名湖パルパル 観覧車', '浜名湖パルパル'], type: 'wheel', color: 0xe91e63 },
+  { id: 'preha', name: 'プレ葉ウォーク浜北', q: ['プレ葉ウォーク浜北'], type: 'mall', color: 0xe65100, h: 16, w: 180, d: 90 },
+  { id: 'sunstreet', name: 'サンストリート浜北', q: ['サンストリート浜北'], type: 'mall', color: 0x1e88e5, h: 12, w: 180, d: 90 },
+  { id: 'zoo', name: '浜松市動物園', q: ['浜松市動物園'], type: 'zoo', color: 0xff7043, w: 160, d: 120 },
+];
+const MLAT = 111320;
+function bboxOf(g) {
+  let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+  (function walk(c) { if (typeof c[0] === 'number') { x0 = Math.min(x0, c[0]); x1 = Math.max(x1, c[0]); y0 = Math.min(y0, c[1]); y1 = Math.max(y1, c[1]); } else c.forEach(walk); })(g.coordinates);
+  return [x0, y0, x1, y1];
+}
+function slab(shapes, y, h, mat) {
+  const grp = new THREE.Group();
+  for (const sh of shapes) {
+    const m = new THREE.Mesh(new THREE.ExtrudeGeometry(sh, { depth: h, bevelEnabled: false }), mat);
+    m.rotation.x = -Math.PI / 2; m.position.y = y; grp.add(m);
+  }
+  return grp;
+}
+function buildWheel() {
+  const g = new THREE.Group(), R = 22, H = 26, steel = lam(0xf2f2f2), w = new THREE.Group();
+  w.position.y = H; g.add(w);
+  w.add(new THREE.Mesh(new THREE.TorusGeometry(R, 0.5, 8, 64), steel));
+  w.add(new THREE.Mesh(new THREE.TorusGeometry(R * 0.5, 0.35, 8, 48), steel));
+  for (let i = 0; i < 16; i++) {
+    const a = i / 16 * Math.PI * 2;
+    const sp = new THREE.Mesh(new THREE.BoxGeometry(R, 0.3, 0.3), steel);
+    sp.position.set(Math.cos(a) * R / 2, Math.sin(a) * R / 2, 0); sp.rotation.z = a; w.add(sp);
+    const gd = new THREE.Mesh(new THREE.BoxGeometry(2.4, 2.4, 2.4), lam(new THREE.Color().setHSL(i / 16, 0.8, 0.55)));
+    gd.position.set(Math.cos(a) * R, Math.sin(a) * R - 1.6, 0); w.add(gd);
+  }
+  for (const s of [-1, 1]) for (const z of [-2.5, 2.5]) {
+    const leg = new THREE.Mesh(new THREE.BoxGeometry(1.2, H + 2, 1.2), lam(0xd0d4d8));
+    leg.position.set(s * 5, H / 2, z); leg.rotation.z = -s * 0.2; g.add(leg);
+  }
+  g.add(box(30, 1, 14, lam(0x9aa0a6), 0, 0, 0)); g.rotation.y = 0.35;
+  return g;
+}
+function buildFac(f, geom, lng0, lat0) {
+  const g = new THREE.Group(), mLng = MLAT * Math.cos(lat0 * D2R);
+  let shapes = [];
+  if (geom && (geom.type === 'Polygon' || geom.type === 'MultiPolygon')) {
+    const polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
+    shapes = polys.map((pl) => { const sh = new THREE.Shape(); pl[0].forEach(([x, y], i) => { const px = (x - lng0) * mLng, py = (y - lat0) * MLAT; i ? sh.lineTo(px, py) : sh.moveTo(px, py); }); return sh; });
+  } else {
+    const w = f.w || 80, d = f.d || 50, sh = new THREE.Shape();
+    sh.moveTo(-w / 2, -d / 2); sh.lineTo(w / 2, -d / 2); sh.lineTo(w / 2, d / 2); sh.lineTo(-w / 2, d / 2); shapes = [sh];
+  }
+  const cream = lam(0xf1ece3);
+  if (f.type === 'mall' || f.type === 'school') {
+    g.add(slab(shapes, 0, f.h - 3, cream)); g.add(slab(shapes, f.h - 3, 3, lam(f.color))); g.add(slab(shapes, f.h, 0.8, lam(0x8d949c)));
+  } else if (f.type === 'zoo') {
+    g.add(slab(shapes, 0, 0.5, lam(0x86c765)));
+    g.add(box(24, 6, 16, cream, 0, 0.5, 0)); g.add(hip(30, 22, 5, lam(0xc0392b), 6.5));
+  } else if (f.type === 'forest') {
+    g.add(slab(shapes, 0, 6, lam(0xb98b5a))); g.add(slab(shapes, 6, 1, lam(0x2e7d32)));
+    for (let i = 0; i < 10; i++) {
+      const a = i / 10 * Math.PI * 2, r = 26 + (i % 3) * 6, tx = Math.cos(a) * r, tz = Math.sin(a) * r;
+      const tr = ecyl(0.5, 0.5, 3, lam(0x6d4c41), 0, 6); tr.position.x = tx; tr.position.z = tz; g.add(tr);
+      const cone = new THREE.Mesh(new THREE.ConeGeometry(3.2, 9, 8), lam(0x2e7d32)); cone.position.set(tx, 7.5, tz); g.add(cone);
+    }
+  } else if (f.type === 'wheel') g.add(buildWheel());
+  // 強調: 光の柱 + 地上リング
+  g.add(ecyl(2.5, 2.5, 120, new THREE.MeshBasicMaterial({ color: f.color, transparent: true, opacity: 0.35, depthWrite: false }), 0, 12));
+  const ring = new THREE.Mesh(new THREE.RingGeometry(36, 40, 48), new THREE.MeshBasicMaterial({ color: f.color, side: THREE.DoubleSide, transparent: true, opacity: 0.8 }));
+  ring.rotation.x = -Math.PI / 2; ring.position.y = 0.3; g.add(ring);
+  return g;
+}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+async function geocode(q) {
+  const u = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&polygon_geojson=1&accept-language=ja&countrycodes=jp'
+    + '&viewbox=137.5,34.95,137.95,34.55&bounded=1&q=' + encodeURIComponent(q);
+  const r = await fetch(u); return (await r.json())[0] || null;
+}
+async function loadFacilities() {
+  const missing = [];
+  for (let i = 0; i < FAC.length; i++) {
+    const f = FAC[i]; status('施設を検索中 ' + (i + 1) + '/' + FAC.length + ': ' + f.name);
+    try {
+      let r = null;
+      for (const q of f.q) { r = await geocode(q); await sleep(1100); if (r) break; }
+      if (!r) { missing.push(f.name); continue; }
+      let geom = r.geojson, lng0 = +r.lon, lat0 = +r.lat;
+      if (geom && (geom.type === 'Polygon' || geom.type === 'MultiPolygon')) {
+        const [x0, y0, x1, y1] = bboxOf(geom);
+        if ((x1 - x0) * MLAT * 0.82 > 1500 || (y1 - y0) * MLAT > 1500) geom = null;
+        else { lng0 = (x0 + x1) / 2; lat0 = (y0 + y1) / 2; }
+      }
+      SITES[f.id] = { lngLat: [lng0, lat0], zoom: 17, pitch: 60, bearing: 30, name: f.name, labelY: -150 };
+      const scene = new THREE.Scene();
+      scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+      const sun = new THREE.DirectionalLight(0xfff4e0, 0.9); sun.position.set(-60, 120, 80); scene.add(sun);
+      scene.add(buildFac(f, geom, lng0, lat0));
+      const mc = maplibregl.MercatorCoordinate.fromLngLat([lng0, lat0], 0);
+      modelsLayer.items.push({ key: f.id, scene, mc, scale: mc.meterInMercatorCoordinateUnits() });
+      makeMarker(f.id, f.color); addOpt(f.id); map.triggerRepaint();
+    } catch (e) { console.warn('facility failed', f.name, e); missing.push(f.name); }
+  }
+  status(missing.length ? '位置が見つからなかった施設: ' + missing.join('、') + '(「位置を指定」で配置できます)' : '全施設を配置しました');
+}
+map.once('idle', loadFacilities);
+
+// ---------- 操作 ----------
+let orbiting = false;
+const stop = () => { orbiting = false; };
+sel.onchange = () => {
+  stop(); focus = sel.value; const s = SITES[focus]; showCoords();
+  map.flyTo({ center: s.lngLat, zoom: s.zoom, pitch: s.pitch, bearing: s.bearing, duration: 3000, essential: true });
+};
+document.getElementById('btnTop').onclick = () => {
+  stop(); map.flyTo({ center: SITES[focus].lngLat, zoom: SITES[focus].zoom - 0.5, pitch: 0, bearing: 0, duration: 2000 });
+};
+document.getElementById('btnOrbit').onclick = () => {
+  if (orbiting) { stop(); return; }
+  orbiting = true;
+  map.easeTo({ center: SITES[focus].lngLat, pitch: 65, zoom: SITES[focus].zoom, duration: 1000 });
+  const step = () => { if (!orbiting) return; map.setBearing(map.getBearing() + 0.25); requestAnimationFrame(step); };
+  setTimeout(step, 1000);
+};
+map.on('mousedown', stop); map.on('touchstart', stop);
+document.getElementById('chkOsm').onchange = applyOsm;
+</script>
+</body>
+</html>
