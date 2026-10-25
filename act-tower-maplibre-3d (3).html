@@ -218,8 +218,8 @@ map.on('click', (e) => { if (!placing) return; setSite(placing, [e.lngLat.lng, e
 const FAC = [
   { id: 'aeon-ichino', name: 'イオンモール浜松市野', q: ['イオンモール浜松市野'], type: 'mall', color: 0xc4006e, h: 20, w: 200, d: 120 },
   { id: 'aeon-shizuro', name: 'イオンモール浜松志都呂', q: ['イオンモール浜松志都呂', 'イオン浜松志都呂店'], type: 'mall', color: 0xc4006e, h: 20, w: 200, d: 120 },
-  { id: 'aeon-irino', name: 'イオンモール入野', q: ['イオンモール入野', 'イオン浜松入野店'], type: 'mall', color: 0xc4006e, h: 18, w: 160, d: 100 },
-  { id: 'aeon-aoi', name: 'イオンモール浜松葵', q: ['イオンモール浜松葵', 'イオン浜松葵店'], type: 'mall', color: 0xc4006e, h: 18, w: 160, d: 100 },
+  { id: 'aeon-irino', name: '\u30a4\u30aa\u30f3\u6d5c\u677e\u897f\u5e97', q: [], lngLat: [137.6899722, 34.6992222], type: 'mall', color: 0xc4006e, h: 18, w: 160, d: 100 },
+  { id: 'aeon-aoi', name: '\u30a4\u30aa\u30f3\u30bf\u30a6\u30f3\u6d5c\u677e\u8475', q: [], lngLat: [137.706994, 34.768174], type: 'mall', color: 0xc4006e, h: 18, w: 160, d: 100 },
   { id: 'koto-jhs', name: '湖東中学校', q: ['浜松市立湖東中学校', '湖東中学校 浜松'], type: 'school', color: 0xf9a825, h: 14, w: 90, d: 30 },
   { id: 'johoku', name: '城北工業高校', q: ['静岡県立浜松城北工業高等学校', '浜松城北工業高校'], type: 'school', color: 0x455a64, h: 16, w: 100, d: 35 },
   { id: 'nukumori', name: 'ぬくもりの森', q: ['ぬくもりの森 浜松', '浜松市 ぬくもりの森'], type: 'forest', color: 0x2e7d32, h: 6, w: 50, d: 30 },
@@ -302,8 +302,8 @@ async function loadFacilities() {
   for (let i = 0; i < FAC.length; i++) {
     const f = FAC[i]; status('施設を検索中 ' + (i + 1) + '/' + FAC.length + ': ' + f.name);
     try {
-      let r = null;
-      for (const q of f.q) { r = await geocode(q); await sleep(1100); if (r) break; }
+      let r = f.lngLat ? { lon: String(f.lngLat[0]), lat: String(f.lngLat[1]), geojson: null } : null;
+      if (!f.lngLat) for (const q of f.q) { r = await geocode(q); await sleep(1100); if (r) break; }
       if (!r) { missing.push(f.name); continue; }
       let geom = r.geojson, lng0 = +r.lon, lat0 = +r.lat;
       if (geom && (geom.type === 'Polygon' || geom.type === 'MultiPolygon')) {
