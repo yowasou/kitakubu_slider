@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>浜松 アクトタワー & 浜松城 3Dモデル</title>
+<title>&#x5E30;&#x5B85;&#x90E8;&#x30B9;&#x30E9;&#x30A4;&#x30C0;&#x30FC;</title>
 <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
@@ -23,7 +23,7 @@
 <body>
 <div id="map"></div>
 <div id="panel">
-  <h1>Set your route</h1>
+  <h1>&#x5E30;&#x5B85;&#x90E8;&#x30B9;&#x30E9;&#x30A4;&#x30C0;&#x30FC;</h1>
   <p>Choose the start and destination on the top-down map.</p>
   <div id="routeSetup" class="route-setup">
     <div class="route-point"><b>START</b><span id="startCoord"></span><select id="startSelect" aria-label="Start location"></select><button id="pickStart">Choose start on map</button></div>
@@ -252,6 +252,49 @@ const FAC = [
   { id: 'preha', name: 'プレ葉ウォーク浜北', q: ['プレ葉ウォーク浜北'], type: 'mall', color: 0xe65100, h: 16, w: 180, d: 90 },
   { id: 'sunstreet', name: 'サンストリート浜北', q: ['サンストリート浜北'], type: 'mall', color: 0x1e88e5, h: 12, w: 180, d: 90 },
   { id: 'zoo', name: '浜松市動物園', q: ['浜松市動物園'], type: 'zoo', color: 0xff7043, w: 160, d: 120 },
+  { id: 'park-manyo', name: '万葉の森公園', q: ['万葉の森公園 浜松'], type: 'forest', color: 0x2e7d32, h: 6, w: 260, d: 220 },
+  { id: 'park-miyakoda', name: '都田総合公園', q: ['都田総合公園 浜松'], type: 'forest', color: 0x2e7d32, h: 6, w: 420, d: 320 },
+  { id: 'park-hamanako', name: '浜名湖ガーデンパーク', q: ['浜名湖ガーデンパーク'], type: 'forest', color: 0x2e7d32, h: 6, w: 520, d: 360 },
+  { id: 'kamoe-art', name: '鴨江アートセンター', q: ['鴨江アートセンター 浜松'], type: 'school', color: 0x8e24aa, h: 12, w: 80, d: 60 },
+  { id: 'hamamatsu-innovation-cube', name: '浜松イノベーションキューブ', q: ['浜松イノベーションキューブ'], type: 'school', color: 0x00897b, h: 18, w: 100, d: 70 },
+  { id: 'elem-shirawaki', name: '白脇小学校', q: ['浜松市立白脇小学校', '白脇小学校 浜松'], type: 'school', color: 0xf9a825, h: 14, w: 90, d: 65 },
+  { id: 'elem-kaba', name: '蒲小学校', q: ['浜松市立蒲小学校', '蒲小学校 浜松'], type: 'school', color: 0xf9a825, h: 14, w: 90, d: 65 },
+  { id: 'elem-uchino', name: '内野小学校', q: ['浜松市立内野小学校', '内野小学校 浜松'], type: 'school', color: 0xf9a825, h: 14, w: 90, d: 65 },
+  { id: 'elem-kamijima', name: '上島小学校', q: ['浜松市立上島小学校', '上島小学校 浜松'], type: 'school', color: 0xf9a825, h: 14, w: 90, d: 65 },
+  { id: 'elem-sekishi', name: '積志小学校', q: ['浜松市立積志小学校', '積志小学校 浜松'], type: 'school', color: 0xf9a825, h: 14, w: 90, d: 65 },
+  { id: 'elem-yoshin', name: '与進小学校', q: ['浜松市立与進小学校', '与進小学校 浜松'], type: 'school', color: 0xf9a825, h: 14, w: 90, d: 65 },
+  { id: 'elem-hatsuoi', name: '初生小学校', q: ['浜松市立初生小学校', '初生小学校 浜松'], type: 'school', color: 0xf9a825, h: 14, w: 90, d: 65 },
+  { id: 'elem-hirosawa', name: '広沢小学校', q: ['浜松市立広沢小学校', '広沢小学校 浜松'], type: 'school', color: 0xf9a825, h: 14, w: 90, d: 65 },
+  { id: 'elem-uto', name: '雄踏小学校', q: ['浜松市立雄踏小学校', '雄踏小学校 浜松'], type: 'school', color: 0xf9a825, h: 14, w: 90, d: 65 },
+  { id: 'elem-kami', name: '可美小学校', q: ['浜松市立可美小学校', '可美小学校 浜松'], type: 'school', color: 0xf9a825, h: 14, w: 90, d: 65 },
+  { id: 'jhs-hamana', name: '浜名中学校', q: ['浜松市立浜名中学校', '浜名中学校 浜松'], type: 'school', color: 0x455a64, h: 16, w: 100, d: 70 },
+  { id: 'jhs-mikatabara', name: '三方原中学校', q: ['浜松市立三方原中学校', '三方原中学校 浜松'], type: 'school', color: 0x455a64, h: 16, w: 100, d: 70 },
+  { id: 'jhs-hamakita-hokubu', name: '浜北北部中学校', q: ['浜松市立浜北北部中学校', '浜北北部中学校'], type: 'school', color: 0x455a64, h: 16, w: 100, d: 70 },
+  { id: 'jhs-hikuma', name: '曳馬中学校', q: ['浜松市立曳馬中学校', '曳馬中学校 浜松'], type: 'school', color: 0x455a64, h: 16, w: 100, d: 70 },
+  { id: 'jhs-nanbu', name: '南部中学校', q: ['浜松市立南部中学校', '南部中学校 浜松'], type: 'school', color: 0x455a64, h: 16, w: 100, d: 70 },
+  { id: 'jhs-kitahama', name: '北浜中学校', q: ['浜松市立北浜中学校', '北浜中学校 浜松'], type: 'school', color: 0x455a64, h: 16, w: 100, d: 70 },
+  { id: 'jhs-hokusei', name: '北星中学校', q: ['浜松市立北星中学校', '北星中学校 浜松'], type: 'school', color: 0x455a64, h: 16, w: 100, d: 70 },
+  { id: 'jhs-sekishi', name: '積志中学校', q: ['浜松市立積志中学校', '積志中学校 浜松'], type: 'school', color: 0x455a64, h: 16, w: 100, d: 70 },
+  { id: 'jhs-yoshin', name: '与進中学校', q: ['浜松市立与進中学校', '与進中学校 浜松'], type: 'school', color: 0x455a64, h: 16, w: 100, d: 70 },
+  { id: 'jhs-irino', name: '入野中学校', q: ['浜松市立入野中学校', '入野中学校 浜松'], type: 'school', color: 0x455a64, h: 16, w: 100, d: 70 },
+  { id: 'hs-hamamatsu-city', name: '浜松市立高等学校', q: ['浜松市立高等学校'], type: 'school', color: 0x6a1b9a, h: 18, w: 120, d: 80 },
+  { id: 'hs-hamamatsu-kita', name: '静岡県立浜松北高等学校', q: ['静岡県立浜松北高等学校'], type: 'school', color: 0x6a1b9a, h: 18, w: 120, d: 80 },
+  { id: 'hs-hamamatsu-nishi', name: '静岡県立浜松西高等学校', q: ['静岡県立浜松西高等学校'], type: 'school', color: 0x6a1b9a, h: 18, w: 120, d: 80 },
+  { id: 'hs-hamamatsu-minami', name: '静岡県立浜松南高等学校', q: ['静岡県立浜松南高等学校'], type: 'school', color: 0x6a1b9a, h: 18, w: 120, d: 80 },
+  { id: 'hs-hamamatsu-tech', name: '静岡県立浜松工業高等学校', q: ['静岡県立浜松工業高等学校'], type: 'school', color: 0x6a1b9a, h: 18, w: 120, d: 80 },
+  { id: 'hs-hamamatsu-commerce', name: '静岡県立浜松商業高等学校', q: ['静岡県立浜松商業高等学校'], type: 'school', color: 0x6a1b9a, h: 18, w: 120, d: 80 },
+  { id: 'hs-hamana', name: '静岡県立浜名高等学校', q: ['静岡県立浜名高等学校'], type: 'school', color: 0x6a1b9a, h: 18, w: 120, d: 80 },
+  { id: 'hs-gakuin', name: '浜松学院高等学校', q: ['浜松学院高等学校'], type: 'school', color: 0x6a1b9a, h: 18, w: 120, d: 80 },
+  { id: 'hs-kaiseikan', name: '浜松開誠館高等学校', q: ['浜松開誠館高等学校'], type: 'school', color: 0x6a1b9a, h: 18, w: 120, d: 80 },
+  { id: 'uni-shizuoka-hamamatsu', name: '静岡大学浜松キャンパス', q: ['静岡大学浜松キャンパス'], type: 'school', color: 0x00897b, h: 22, w: 180, d: 120 },
+  { id: 'uni-shizuoka-culture-arts', name: '静岡文化芸術大学', q: ['静岡文化芸術大学'], type: 'school', color: 0x00897b, h: 22, w: 160, d: 110 },
+  { id: 'uni-tokoha-hamamatsu', name: '常葉大学浜松キャンパス', q: ['常葉大学浜松キャンパス'], type: 'school', color: 0x00897b, h: 22, w: 180, d: 120 },
+  { id: 'uni-hamamatsu-gakuin', name: '浜松学院大学', q: ['浜松学院大学'], type: 'school', color: 0x00897b, h: 22, w: 160, d: 110 },
+  { id: 'uni-hamamatsu-med', name: '浜松医科大学', q: ['浜松医科大学'], type: 'school', color: 0x00897b, h: 22, w: 180, d: 120 },
+  { id: 'hospital-seirei-mikatabara', name: '聖隷三方原病院', q: ['聖隷三方原病院'], type: 'school', color: 0xd32f2f, h: 22, w: 160, d: 120 },
+  { id: 'hospital-seirei-hamamatsu', name: '聖隷浜松病院', q: ['聖隷浜松病院'], type: 'school', color: 0xd32f2f, h: 20, w: 150, d: 110 },
+  { id: 'hospital-hamamatsu-university', name: '浜松医科大学医学部附属病院', q: ['浜松医科大学医学部附属病院'], type: 'school', color: 0xd32f2f, h: 22, w: 170, d: 130 },
+  { id: 'hospital-hamamatsu-medical-center', name: '浜松医療センター', q: ['浜松医療センター'], type: 'school', color: 0xd32f2f, h: 20, w: 150, d: 110 },
 ];
 function populateRouteOptions(){const choices=[{key:'tower',name:'\u30a2\u30af\u30c8\u30bf\u30ef\u30fc'},{key:'castle',name:'\u6d5c\u677e\u57ce'},...FAC.map(f=>({key:f.id,name:f.name}))];for(const [id,defaultKey] of [['startSelect','tower'],['endSelect','nukumori']]){const select=document.getElementById(id);select.replaceChildren();for(const item of choices){const option=document.createElement('option');option.value=item.key;option.textContent=item.name;option.disabled=!routePlaceCoordinates(item.key);select.append(option)}select.value=defaultKey}}
 populateRouteOptions();const MLAT = 111320;
