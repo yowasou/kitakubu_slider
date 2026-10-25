@@ -8,7 +8,7 @@
 <link href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
 <style>
-  #map { background: linear-gradient(to bottom, #2f86e0 0%, #6fb4f2 45%, #cfe8ff 100%); }
+  .flight-card{margin-top:10px;padding:13px;border:1px solid #ffffff30;border-radius:12px;background:linear-gradient(145deg,#192637f5,#0f1825ed);box-shadow:0 10px 30px #0005}.flight-kicker{color:#9dc6ff;font-size:9px;letter-spacing:.16em;font-weight:800}.flight-title{margin:5px 0 10px;font-size:15px;line-height:1.45;font-weight:750}.flight-route{display:flex;align-items:center;gap:7px;color:#e8eef8;font-size:9px;font-weight:700;white-space:nowrap}.flight-route i{flex:1;min-width:12px;border-top:1px dashed #76b6ff}.flight-meta{display:flex;justify-content:space-between;margin-top:9px;color:#bac8da;font-size:10px}.flight-progress{height:3px;margin-top:8px;overflow:hidden;border-radius:5px;background:#ffffff24}.flight-progress span{display:block;width:0;height:100%;background:#71c8ff;box-shadow:0 0 10px #71c8ff}.flight-status{margin:8px 0;color:#d4e2f4;font-size:10px}#panel .flight-button{width:100%;margin:0;padding:10px;border-radius:8px;background:linear-gradient(100deg,#3182f6,#16b8cc);font-size:12px;font-weight:750}.aircraft-marker{width:42px;height:42px;display:grid;place-items:center;border:1px solid #ffffffbf;border-radius:50%;color:white;background:linear-gradient(145deg,#36bafa,#1769d2);box-shadow:0 4px 16px #0006,0 0 24px #43afff73;font-size:22px}  #rideOverlay{display:none;position:fixed;inset:0;z-index:4;pointer-events:none;overflow:hidden}.ride-mode #rideOverlay{display:block}.ride-mode #panel>h1,.ride-mode #panel>p,.ride-mode #panel>select,.ride-mode #panel>button:not(.flight-button),.ride-mode #panel>label,.ride-mode #panel>div:not(.flight-card){display:none}.ride-mode #panel{max-width:250px;padding:9px 11px;background:#101b2acc}.ride-mode .flight-card{margin:0;padding:9px 11px}.ride-mode .flight-title{font-size:12px;margin:2px 0 5px}.ride-mode .flight-meta{margin-top:5px}.ride-mode .flight-status{margin:4px 0}.ride-mode .flight-route{font-size:8px}.ride-mode #map{animation:rideJolt .18s infinite alternate}.flume{position:absolute;left:50%;bottom:-9vh;width:min(116vw,1200px);height:48vh;transform:translateX(-50%);filter:drop-shadow(0 -9px 18px #07304c99)}.flume-wall{position:absolute;inset:0;background:linear-gradient(90deg,#e9fbff 0%,#5ac9e7 4%,#15769e 12%,#07384f 22%,transparent 34%,transparent 66%,#07384f 78%,#15769e 88%,#5ac9e7 96%,#e9fbff 100%);clip-path:polygon(0 0,40% 13%,43% 100%,0 100%,0 95%,34% 88%,35% 23%,0 7%,100% 7%,65% 23%,66% 88%,100% 95%,100% 100%,57% 100%,60% 13%)}.flume-water{position:absolute;left:34%;right:34%;top:19%;bottom:0;border-radius:48% 48% 0 0 / 12% 12% 0 0;background:radial-gradient(ellipse at 50% 0%,#efffff 0%,#78edff 8%,#16acd5 24%,#08749f 53%,#04354f 100%);box-shadow:inset 0 12px 25px #d2ffff9c,inset 0 -24px 34px #021f38aa;animation:waterFlow .38s linear infinite}.flume-rim{position:absolute;left:32%;right:32%;top:17%;height:13%;border-top:10px solid #d9fbff;border-radius:50%;filter:drop-shadow(0 0 9px #80eaff)}.splash{position:absolute;bottom:13%;width:12px;height:22px;border-radius:70% 30% 65% 35%;background:linear-gradient(#fff,#65e4ff);box-shadow:0 0 12px #71e9ff;animation:splashFly .75s ease-in infinite}.splash.a{left:27%;animation-delay:-.3s}.splash.b{left:68%;width:8px;height:16px;animation-delay:-.55s}.splash.c{left:20%;width:6px;height:11px;animation-delay:-.1s}.ride-vignette{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 54%,transparent 36%,#03142314 68%,#031423ad 100%);box-shadow:inset 0 0 90px #07233a66}.ride-speedlines{position:absolute;inset:0;opacity:.16;background:repeating-linear-gradient(103deg,transparent 0 12%,#e4fbff 12.2% 12.35%,transparent 12.5% 20%);mask-image:linear-gradient(transparent 5%,#000 55%,transparent 83%);animation:speedFlow .28s linear infinite}.ride-reticle{position:absolute;left:50%;top:45%;width:5px;height:5px;border-radius:50%;background:#fff9;box-shadow:0 0 8px #fff}.ride-caption{position:absolute;right:18px;bottom:20px;color:#effcff;text-shadow:0 2px 8px #001d36;font-size:11px;letter-spacing:.12em;font-weight:700}.ride-caption:after{content:'  POV';color:#8beaff}@keyframes waterFlow{to{background-position:0 36px}}@keyframes splashFly{0%{transform:translateY(0) scale(.7);opacity:0}25%{opacity:.9}100%{transform:translateY(-95px) scale(1.2);opacity:0}}@keyframes speedFlow{to{background-position:0 50px}}@keyframes rideJolt{from{transform:translate(0,0)}to{transform:translate(.4px,-.5px)}}@media(max-width:600px){.flume{width:150vw;height:42vh;bottom:-7vh}.ride-caption{bottom:12px;right:10px}}  #map { background: linear-gradient(to bottom, #2f86e0 0%, #6fb4f2 45%, #cfe8ff 100%); }
   .lbl2 { color: #fff; font-weight: bold; font-size: 12px; padding: 2px 8px; border-radius: 10px; border: 1px solid #fff; white-space: nowrap; pointer-events: none; box-shadow: 0 1px 4px rgba(0,0,0,.5); }
   html, body, #map { margin: 0; width: 100%; height: 100%; font-family: system-ui, "Hiragino Sans", "Yu Gothic", sans-serif; }
   #panel { position: absolute; top: 12px; left: 12px; z-index: 5; background: rgba(20,24,32,.85); color: #fff; padding: 12px 14px; border-radius: 10px; max-width: 250px; font-size: 12px; line-height: 1.6; }
@@ -22,22 +22,23 @@
 </head>
 <body>
 <div id="map"></div>
+<div id="rideOverlay" aria-hidden="true"><div class="ride-speedlines"></div><div class="ride-vignette"></div><div class="flume"><div class="flume-wall"></div><div class="flume-water"></div><div class="flume-rim"></div><i class="splash a"></i><i class="splash b"></i><i class="splash c"></i></div><div class="ride-reticle"></div><div class="ride-caption">WATER SLIDE</div></div>
 <div id="panel">
-  <h1>浜松 3Dモデル</h1>
-  <p>アクトタワー・浜松城と、周辺の施設を色つきの3Dモデルで表示します(高さ・形は概算の近似)。施設の位置は起動後に自動検索します。</p>
+  <h1>Hamamatsu 3D Flight</h1>
+  <p>Third-person flight from Act Tower's 30th floor to Nukumori Forest.</p>
   <select id="sel" style="width:100%;margin-bottom:4px"></select><br>
-  <button id="btnTop">真上</button>
-  <button id="btnOrbit">周回 ON/OFF</button>
-  <label><input type="checkbox" id="chkOsm"> 地図の建物(OSM)を隠す</label>
-  <div style="margin-top:8px;border-top:1px solid #556;padding-top:6px">位置の調整(クリックで指定)<br>
-    <button id="btnPlace">選択中の建物の位置を指定</button>
+  <button id="btnTop">Top view</button>
+  <button id="btnOrbit">Orbit ON/OFF</button>
+  <label><input type="checkbox" id="chkOsm"> Show 3D buildings</label>
+  <div style="margin-top:8px;border-top:1px solid #556;padding-top:6px">Adjust a model location (click map)<br>
+    <button id="btnPlace">Place selected model</button>
     <div id="coords" style="opacity:.85;margin-top:4px;font-size:11px"></div></div>
+  <div class="flight-card"><div class="flight-kicker">HAMAMATSU - WATER RIDE</div><div class="flight-title">Ride the water slide to a storybook forest</div><div class="flight-route"><span>ACT TOWER - 30F</span><i></i><span>NUKUMORI FOREST</span></div><div class="flight-meta"><span id="flightAltitude">Speed 28 km/h</span><span>10 km flume route</span></div><div class="flight-progress"><span id="flightProgress"></span></div><div id="flightStatus" class="flight-status">Ready for takeoff</div><button id="btnFlight" class="flight-button">START THE RIDE</button></div>
 </div>
-
 <script>
 const SITES = {
-  tower:  { lngLat: [137.73722, 34.70560],  zoom: 16.8, pitch: 68, bearing: 40,  name: 'アクトタワー (212m)', labelY: -230 },
-  castle: { lngLat: [137.72546, 34.71173], zoom: 17.6, pitch: 68, bearing: 160, name: '浜松城',               labelY: -150 },
+  tower:  { lngLat: [137.73722, 34.70560], zoom: 16.8, pitch: 68, bearing: 40, name: 'Act Tower (212m)', labelY: -230 },
+  castle: { lngLat: [137.72546, 34.71173], zoom: 17.6, pitch: 68, bearing: 160, name: 'Hamamatsu Castle', labelY: -150 },
 };
 let focus = 'tower';
 
@@ -180,6 +181,15 @@ map.on('style.load', setupStyle);
 map.on('error', (e) => console.warn('map error:', e && e.error && e.error.message));
 
 // ---------- ラベル・位置 ----------
+// ---------- First-person water-slide ride ----------
+const FLIGHT = { start:[137.737183,34.705598], destination:[137.657776,34.765351], duration:22000 };
+const flightWaypoints=[FLIGHT.start,[137.721,34.718],[137.704,34.732],[137.684,34.748],FLIGHT.destination];
+let flightStart=0,flightRunning=false;
+function routePoint(t){const v=t*(flightWaypoints.length-1),i=Math.min(Math.floor(v),flightWaypoints.length-2),f=v-i,a=flightWaypoints[i],b=flightWaypoints[i+1];return[a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f]}
+function routeHeading(t){const a=routePoint(Math.max(0,t-.002)),b=routePoint(Math.min(1,t+.002));return Math.atan2((b[0]-a[0])*Math.cos(b[1]*D2R),b[1]-a[1])/D2R}
+function addFlightRoute(){if(!map.getSource('flight-route'))map.addSource('flight-route',{type:'geojson',data:{type:'Feature',geometry:{type:'LineString',coordinates:flightWaypoints},properties:{}}});if(!map.getLayer('flight-route-line'))map.addLayer({id:'flight-route-line',type:'line',source:'flight-route',paint:{'line-color':'#63c8ff','line-width':2,'line-opacity':.28,'line-dasharray':[2,2]}})}
+function animateFlight(now){if(!flightRunning)return;const t=Math.min(1,(now-flightStart)/FLIGHT.duration),u=t*t*(3-2*t),p=routePoint(u),ahead=routePoint(Math.min(1,u+.004)),h=routeHeading(u);const sway=Math.sin(now*.003)*.000025;map.jumpTo({center:[p[0]+(ahead[0]-p[0])*.16+sway,p[1]+(ahead[1]-p[1])*.16],bearing:h+Math.sin(now*.0018)*1.2,pitch:58+Math.sin(t*Math.PI)*8,zoom:t<.1?17.7-t*10:t>.88?16.7+(t-.88)*8:16.7});document.getElementById('flightProgress').style.width=(t*100).toFixed(1)+'%';document.getElementById('flightAltitude').textContent='Speed '+Math.round(28+67*Math.sin(Math.PI*t*.82))+' km/h';document.getElementById('flightStatus').textContent=t<.08?'Dropping into the flume…':t<.88?'Rushing through the water…':t<1?'Forest approach…':'Arrived at Nukumori Forest!';document.documentElement.style.setProperty('--ride-speed',String(.2+1.2*t));if(t<1)requestAnimationFrame(animateFlight);else{flightRunning=false;document.getElementById('btnFlight').textContent='RIDE AGAIN';map.flyTo({center:FLIGHT.destination,zoom:17.2,pitch:66,bearing:20,duration:1800});setTimeout(()=>{if(!flightRunning)document.body.classList.remove('ride-mode')},2600)}}
+document.getElementById('btnFlight').onclick=()=>{if(flightRunning)return;flightRunning=true;flightStart=performance.now();focus='tower';sel.value='tower';addFlightRoute();document.body.classList.add('ride-mode');document.getElementById('btnFlight').textContent='RIDING…';map.stop();map.jumpTo({center:FLIGHT.start,zoom:17.7,pitch:58,bearing:routeHeading(0)});requestAnimationFrame(animateFlight)};
 const sel = document.getElementById('sel');
 const addOpt = (k) => { const o = document.createElement('option'); o.value = k; o.textContent = SITES[k].name; sel.append(o); };
 const markers = {};
